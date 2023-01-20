@@ -84,7 +84,7 @@ There is a `singed` command line you can use that will record a flamegraph from 
 
 ```shell
 $ bundle binstub singed # if you want to be able to call it like bin/singed
-$ bundle exec singed -- bin/rails 
+$ bundle exec singed -- bin/rails runner 'Model.all.to_a'
 ```
 
 The flamegraph is opened afterwards.

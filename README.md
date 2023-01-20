@@ -98,5 +98,5 @@ The `open` is expected to be available.
 
 ## Alternatives
 
-- using [rbspy](https://rbspy.github.io/) directory
+- using [rbspy](https://rbspy.github.io/) directly
 - using [stackprof](https://github.com/tmm1/stackprof) (a dependency of singed) directly

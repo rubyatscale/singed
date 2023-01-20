@@ -64,7 +64,7 @@ class EmployeesController < ApplicationController
 end
 ```
 
-This won't catch the entire request though, just once it's been routed to controller and a response has been served.
+This won't catch the entire request though, just once it's been routed to controller and a response has been served (ie no middleware).
 
 ### Rack/Rails requests
 

@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.summary       = 'Quick and easy way to get flamegraphs from a specific part of your code base'
   spec.required_ruby_version = '>= 2.7.0'
 
-  spec.metadata['allowed_push_host'] = "TODO: Set to your gem server 'https://example.com'"
+  # spec.metadata['allowed_push_host'] = "TODO: Set to your gem server 'https://example.com'"
 
   spec.files         = Dir['README.md', '*.gemspec', 'lib/**/*', 'exe/**/*']
   spec.bindir        = 'exe'

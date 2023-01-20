@@ -1,0 +1,9 @@
+#!/usr/bin/env ruby
+
+
+require 'singed/cli'
+if Singed::CLI.chdir_rails_root
+  require './config/environment'
+end
+
+Singed::CLI.new(ARGV).run

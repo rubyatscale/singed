@@ -1,6 +1,6 @@
 module Kernel
-  def flamegraph(label = nil, open: true, &block)
-    fg = Singed::Flamegraph.new(label: label)
+  def flamegraph(label = nil, open: true, ignore_gc: false, interval: 1000, &block)
+    fg = Singed::Flamegraph.new(label: label, ignore_gc: ignore_gc, interval: interval)
     result = fg.record(&block)
     fg.save
 

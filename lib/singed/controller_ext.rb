@@ -6,9 +6,9 @@ module Singed
 
     module ClassMethods
       # Define an around_action to generate flamegraph for a controller action.
-      def flamegraph(target_action)
+      def flamegraph(target_action, ignore_gc: false, interval: 1000)
         around_action(only: target_action) do |controller, action|
-          controller.flamegraph(&action)
+          controller.flamegraph(ignore_gc: ignore_gc, interval: interval, &action)
         end
       end
     end

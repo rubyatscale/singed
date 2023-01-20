@@ -21,7 +21,15 @@ module Singed
     end
 
     def capture_flamegraph?(env)
-      env['HTTP_X_SINGED'] == 'true'
+      self.class.always_capture? || env['HTTP_X_SINGED'] == 'true'
+    end
+
+    TRUTHY_STRINGS = ['true', '1', 'yes'].freeze
+
+    def self.always_capture?
+      return @always_capture if defined?(@always_capture)
+
+      @always_capture = TRUTHY_STRINGS.include?(ENV.fetch('SINGED_MIDDLEWARE_ALWAYS_CAPTURE', 'false'))
     end
   end
 end

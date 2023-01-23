@@ -1,10 +1,20 @@
 # Singed
 
-Singed makes it easy to get a flamegraph anywhere in your code base:
+Singed makes it easy to get a flamegraph anywhere in your code base. It wraps profiling your code with [stackprof](https://github.com/tmm1/stackprof) or [rbspy](https://github.com/rbspy/rbspy), and then launching [speedscope](https://github.com/jlfwong/speedscope) to view it.
+
+## Installation
+
+Add to `Gemfile`:
+
+```ruby
+gem "singed"
+```
+
+Then run `bundle install`
 
 ## Usage
 
-To profile your code, and launch [speedscope](https://github.com/jlfwong/speedscope) for viewing it:
+Simplest is calling with a block:
 
 ```ruby
 flamegraph {

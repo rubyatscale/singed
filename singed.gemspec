@@ -22,6 +22,7 @@ Gem::Specification.new do |spec|
   spec.add_dependency 'stackprof'
 
   spec.add_development_dependency 'rake', '~> 13.0'
+  spec.add_development_dependency 'rspec'
 
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html

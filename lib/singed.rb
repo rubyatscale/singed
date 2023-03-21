@@ -13,7 +13,7 @@ module Singed
   end
 
   def self.output_directory
-    @output_directory || raise("output directory hasn't been set!")
+    @output_directory
   end
 
   def enabled=(enabled)

@@ -88,9 +88,17 @@ module Singed
         prompt_password
       end
 
-      Bundler.with_unbundled_env do
+      rbspy = lambda do
         # don't run things with spring, because it forks and rbspy won't see it
         sudo ['rbspy', *rbspy_args], reason: 'Singed needs to run as root, but will drop permissions back to your user.', env: { 'DISABLE_SPRING' => '1' }
+      end
+
+      if defined?(Bundler)
+        Bundler.with_unbundled_env do
+          rbspy.call
+        end
+      else
+        rbspy.call
       end
 
       unless filename.exist?

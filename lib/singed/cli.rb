@@ -112,9 +112,9 @@ module Singed
       end
 
       # clean the report, similar to how Singed::Report does
-      json = JSON.parse(filename.read).with_indifferent_access
+      json = JSON.parse(filename.read)
       json['shared']['frames'].each do |frame|
-        frame[:file] = Singed.filter_line(frame[:file])
+        frame['file'] = Singed.filter_line(frame['file'])
       end
       filename.write(JSON.dump(json))
 

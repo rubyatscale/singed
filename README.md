@@ -32,7 +32,7 @@ Singed.output_directory = "tmp/slowness-exploration"
 If you are calling it in a loop, or with different variations, you can include a label on the filename:
 
 ```ruby
-flamegraph(label: "rspec") {
+flamegraph("rspec") {
   # your code here
 }
 ```

@@ -64,6 +64,7 @@ module Singed
 
       Singed.output_directory = @output_directory if @output_directory
       Singed.output_directory ||= Dir.tmpdir
+      FileUtil.mkdir_p Signed.output_directory
       @filename = Singed::Flamegraph.generate_filename(label: 'cli')
 
       options = {

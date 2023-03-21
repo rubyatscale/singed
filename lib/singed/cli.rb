@@ -1,6 +1,7 @@
 require 'shellwords'
 require 'tmpdir'
 require 'optionparser'
+require 'pathname'
 
 # NOTE: we defer requiring singed until we run. that lets Rails load it if its in the gemfile, so the railtie has had a chance to run
 
@@ -64,6 +65,7 @@ module Singed
 
       Singed.output_directory = @output_directory if @output_directory
       Singed.output_directory ||= Dir.tmpdir
+      FileUtils.mkdir_p Singed.output_directory
       @filename = Singed::Flamegraph.generate_filename(label: 'cli')
 
       options = {
@@ -86,9 +88,17 @@ module Singed
         prompt_password
       end
 
-      Bundler.with_unbundled_env do
+      rbspy = lambda do
         # don't run things with spring, because it forks and rbspy won't see it
         sudo ['rbspy', *rbspy_args], reason: 'Singed needs to run as root, but will drop permissions back to your user.', env: { 'DISABLE_SPRING' => '1' }
+      end
+
+      if defined?(Bundler)
+        Bundler.with_unbundled_env do
+          rbspy.call
+        end
+      else
+        rbspy.call
       end
 
       unless filename.exist?
@@ -102,9 +112,9 @@ module Singed
       end
 
       # clean the report, similar to how Singed::Report does
-      json = JSON.parse(filename.read).with_indifferent_access
+      json = JSON.parse(filename.read)
       json['shared']['frames'].each do |frame|
-        frame[:file] = Singed.filter_line(frame[:file])
+        frame['file'] = Singed.filter_line(frame['file'])
       end
       filename.write(JSON.dump(json))
 

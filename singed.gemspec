@@ -10,16 +10,13 @@ Gem::Specification.new do |spec|
   spec.summary       = 'Quick and easy way to get flamegraphs from a specific part of your code base'
   spec.required_ruby_version = '>= 2.7.0'
 
-  # spec.metadata['allowed_push_host'] = "TODO: Set to your gem server 'https://example.com'"
-
   spec.files         = Dir['README.md', '*.gemspec', 'lib/**/*', 'exe/**/*']
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r(\Aexe/)) { |f| File.basename(f) }
   spec.require_paths = ['lib']
 
-  # Uncomment to register a new dependency of your gem
   spec.add_dependency 'colorize'
-  spec.add_dependency 'stackprof'
+  spec.add_dependency 'stackprof', '>= 0.2.13'
 
   spec.add_development_dependency 'rake', '~> 13.0'
   spec.add_development_dependency 'rspec'

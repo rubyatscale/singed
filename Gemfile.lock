@@ -1,9 +1,9 @@
 PATH
   remote: .
   specs:
-    singed (0.1.1)
+    singed (0.2.0)
       colorize
-      stackprof
+      stackprof (>= 0.2.13)
 
 GEM
   remote: https://rubygems.org/

@@ -53,4 +53,4 @@ end
 
 require 'singed/kernel_ext'
 require 'singed/railtie' if defined?(Rails::Railtie)
-require 'singed/rspec' if defined?(RSpec)
+require 'singed/rspec' if defined?(RSpec) && RSpec.respond_to?(:configure)

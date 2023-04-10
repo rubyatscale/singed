@@ -12,6 +12,8 @@ gem "singed"
 
 Then run `bundle install`
 
+Then run `npm install -g speedscope`
+
 ## Usage
 
 Simplest is calling with a block:

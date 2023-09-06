@@ -53,7 +53,7 @@ module Singed
     end
 
     def self.generate_filename(label: nil, time: Time.now) # rubocop:disable Rails/TimeZone
-      formatted_time = time.strftime('%Y%m%d%H%M%S')
+      formatted_time = time.strftime('%Y%m%d%H%M%S-%6N')
       basename_parts = ['speedscope', label, formatted_time].compact
 
       file = Singed.output_directory.join("#{basename_parts.join('-')}.json")

@@ -21,7 +21,7 @@ jobs:
       packages: write
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Configure git user
       run: |
         git config user.name github-actions

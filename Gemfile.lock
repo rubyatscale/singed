@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    singed (0.2.1)
+    singed (0.2.2)
       colorize
       stackprof (>= 0.2.13)
 

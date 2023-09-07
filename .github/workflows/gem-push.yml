@@ -8,6 +8,9 @@ on:
     paths:
       - 'singed.gemspec'
 
+permissions:
+  # to be able to push tags
+  contents: write
 
 jobs:
   build:

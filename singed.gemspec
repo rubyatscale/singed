@@ -3,7 +3,7 @@
 Gem::Specification.new do |spec|
   spec.name          = 'singed'
 
-  spec.version       = '0.2.1'
+  spec.version       = '0.2.2'
   spec.license       = 'MIT'
   spec.authors       = ['Josh Nichols']
   spec.email         = ['josh.nichols@gusto.com']

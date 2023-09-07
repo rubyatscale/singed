@@ -35,6 +35,7 @@ jobs:
     - name: Bundle install
       run: |
         bundle config path vendor/bundle
+        bundle config frozen true
         bundle install --jobs 4 --retry 3
     - name: git status
       run: git status

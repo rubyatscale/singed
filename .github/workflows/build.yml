@@ -1,0 +1,30 @@
+name: CI Test
+on: [ push ]
+jobs:
+  build:
+    name: Ruby ${{ matrix.ruby }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - ruby: 3.2
+            bundler_version: 2.4.4
+          - ruby: 3.1
+            bundler_version: 2.4.4
+          - ruby: 3.0
+            bundler_version: 2.4.4
+    env:
+      CI: 1
+      BUNDLER_VERSION: ${{ matrix.bundler_version }}
+      USE_OFFICIAL_GEM_SOURCE: 1
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+      - name: Install bundler
+        run: gem install bundler -v $BUNDLER_VERSION
+      - name: Install dependencies
+        run: bundle install
+      - run: bundle exec rspec

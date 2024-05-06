@@ -1,4 +1,4 @@
-require 'singed'
+require "singed"
 
 RSpec.configure do |config|
   config.around(flamegraph: true) do |example|

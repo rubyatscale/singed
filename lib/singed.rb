@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require 'json'
-require 'stackprof'
-require 'colorize'
+require "json"
+require "stackprof"
+require "colorize"
 
 module Singed
   extend self
@@ -46,11 +46,11 @@ module Singed
     line
   end
 
-  autoload :Flamegraph, 'singed/flamegraph'
-  autoload :Report, 'singed/report'
-  autoload :RackMiddleware, 'singed/rack_middleware'
+  autoload :Flamegraph, "singed/flamegraph"
+  autoload :Report, "singed/report"
+  autoload :RackMiddleware, "singed/rack_middleware"
 end
 
-require 'singed/kernel_ext'
-require 'singed/railtie' if defined?(Rails::Railtie)
-require 'singed/rspec' if defined?(RSpec) && RSpec.respond_to?(:configure)
+require "singed/kernel_ext"
+require "singed/railtie" if defined?(Rails::Railtie)
+require "singed/rspec" if defined?(RSpec) && RSpec.respond_to?(:configure)

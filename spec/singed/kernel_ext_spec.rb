@@ -1,5 +1,5 @@
 describe Kernel, "extension" do
-  let(:flamegraph) { 
+  let(:flamegraph) {
     instance_double(Singed::Flamegraph)
   }
 
@@ -25,17 +25,17 @@ describe Kernel, "extension" do
 
   it "works with explicit arguments" do
     # note: use Object.new to get the actual flamegraph kernel extension, instead of the rspec-specific flamegraph
-    Object.new.flamegraph 'yellowjackets', ignore_gc: true, interval: 2000, io: io do
+    Object.new.flamegraph "yellowjackets", ignore_gc: true, interval: 2000, io: io do
     end
 
-    expect(Singed::Flamegraph).to have_received(:new).with(label: 'yellowjackets', ignore_gc: true, interval: 2000)
+    expect(Singed::Flamegraph).to have_received(:new).with(label: "yellowjackets", ignore_gc: true, interval: 2000)
   end
 
   context "default" do
     it "opens" do
       Object.new.flamegraph open: true, io: io do
       end
-      
+
       expect(flamegraph).to have_received(:open)
     end
   end

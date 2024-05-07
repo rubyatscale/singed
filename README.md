@@ -6,6 +6,11 @@
 
 Singed makes it easy to get a flamegraph anywhere in your code base. It wraps profiling your code with [stackprof](https://github.com/tmm1/stackprof) or [rbspy](https://github.com/rbspy/rbspy), and then launching [speedscope](https://github.com/jlfwong/speedscope) to view it.
 
+But why would you want to do this? At least a couple of reasons:
+
+- you have code that you either feel, think, or KNOW is slow
+- you are curious about how some code actually runs
+
 ## Installation
 
 Add to `Gemfile`:

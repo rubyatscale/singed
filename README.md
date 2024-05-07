@@ -1,7 +1,7 @@
 # Singed
 
 
-[![Gem Version](https://badge.fury.io/rb/singed.svg)](https://badge.fury.io/rb/singed)  | ![CI](https://github.com/rubyatscale/singed/actions/workflows/build.yml/badge.svg?event=push) | ![Standard](https://github.com/rubyatscale/singed/actions/workflows/standardrb.yml/badge.svg?event=push)
+[![Gem Version](https://badge.fury.io/rb/singed.svg)](https://badge.fury.io/rb/singed)  | ![CI](https://github.com/rubyatscale/singed/actions/workflows/build.yml/badge.svg?event=push) | ![Standard](https://github.com/rubyatscale/singed/actions/workflows/standardrb.yaml/badge.svg?event=push)
 
 
 Singed makes it easy to get a flamegraph anywhere in your code base. It wraps profiling your code with [stackprof](https://github.com/tmm1/stackprof) or [rbspy](https://github.com/rbspy/rbspy), and then launching [speedscope](https://github.com/jlfwong/speedscope) to view it.

@@ -6,11 +6,11 @@ module Singed
       # it's been created elsewhere, ie rbspy
       if filename
         if ignore_gc
-          raise ArgumentError, 'ignore_gc not supported when given an existing file'
+          raise ArgumentError, "ignore_gc not supported when given an existing file"
         end
 
         if label
-          raise ArgumentError, 'label not supported when given an existing file'
+          raise ArgumentError, "label not supported when given an existing file"
         end
 
         @filename = filename
@@ -41,7 +41,7 @@ module Singed
       report = Singed::Report.new(@profile)
       report.filter!
       filename.dirname.mkpath
-      filename.open('w') { |f| report.print_json(f) }
+      filename.open("w") { |f| report.print_json(f) }
     end
 
     def open
@@ -53,10 +53,10 @@ module Singed
     end
 
     def self.generate_filename(label: nil, time: Time.now) # rubocop:disable Rails/TimeZone
-      formatted_time = time.strftime('%Y%m%d%H%M%S-%6N')
-      basename_parts = ['speedscope', label, formatted_time].compact
+      formatted_time = time.strftime("%Y%m%d%H%M%S-%6N")
+      basename_parts = ["speedscope", label, formatted_time].compact
 
-      file = Singed.output_directory.join("#{basename_parts.join('-')}.json")
+      file = Singed.output_directory.join("#{basename_parts.join("-")}.json")
       # convert to relative directory if it's an absolute path and within the current
       pwd = Pathname.pwd
       file = file.relative_path_from(pwd) if file.absolute? && file.to_s.start_with?(pwd.to_s)

@@ -30,7 +30,7 @@ Flamegraphs are saved for later review to `Singed.output_directory`, which is `t
 Singed.output_directory = "tmp/slowness-exploration"
 ```
 
-#### Block form
+### Block form
 If you are calling it in a loop, or with different variations, you can include a label on the filename:
 
 ```ruby
@@ -47,9 +47,22 @@ flamegraph(open: false) {
 }
 ```
 
+##### Options
+
+`flamegraph` takes some of the options that [stackprof]() does:
+
+- `ignore_gc: true`: if your profiled code is very memory heavy, the garbage collection can make it harder to read. ignoring gc can make it more readable, but it's also a sign to use [memory_profiler](https://github.com/SamSaffron/memory_profiler).
+- `interval: 1000` (in ms): how frequently to sample. for very small 
+
+Plus some of its own:
+
+- `label: "your-description"`: a label to include in the filename
+- `open: false`: don't try to `open` the flamegraph in a browser
+- `io: File.open("your-output")` where to write the output, defaults to `$stdout`
+
 #### RSpec
 
-If you are using RSpec, you can use the `flamegraph` metadata to capture it for you.
+If you are using RSpec, you can use the `flamegraph` metadata to capture it for you. This [RSpec::Core::Hooks#around](https://rubydoc.info/gems/rspec-core/RSpec%2FCore%2FHooks:around), so focuses only on code inside the example block.
 
 ```ruby
 # make sure this is required at somepoint, like in a spec/support file!
@@ -76,7 +89,7 @@ class EmployeesController < ApplicationController
 end
 ```
 
-This won't catch the entire request though, just once it's been routed to controller and a response has been served (ie no middleware).
+This won't catch the entire request though, _just once it's been routed to controller and a response has been served_ (ie no middleware).
 
 #### Rack/Rails requests
 

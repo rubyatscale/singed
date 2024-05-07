@@ -16,7 +16,7 @@ Then run `npm install -g speedscope`
 
 ## Usage
 
-Simplest is calling with a block:
+The simplest way is to wrap your code with a block
 
 ```ruby
 flamegraph {
@@ -30,7 +30,7 @@ Flamegraphs are saved for later review to `Singed.output_directory`, which is `t
 Singed.output_directory = "tmp/slowness-exploration"
 ```
 
-### Blockage
+#### Block form
 If you are calling it in a loop, or with different variations, you can include a label on the filename:
 
 ```ruby
@@ -39,7 +39,7 @@ flamegraph("rspec") {
 }
 ```
 
-You can also skip opening speedscope automatically:
+You can also skip opening speedscope in a browser automatically:
 
 ```ruby
 flamegraph(open: false) {
@@ -47,7 +47,7 @@ flamegraph(open: false) {
 }
 ```
 
-### RSpec
+#### RSpec
 
 If you are using RSpec, you can use the `flamegraph` metadata to capture it for you.
 
@@ -62,7 +62,7 @@ RSpec.describe YourClass do
 end
 ```
 
-### Controllers
+#### Controllers
 
 If you want to capture a flamegraph of a controller action, you can call it like:
 
@@ -78,7 +78,7 @@ end
 
 This won't catch the entire request though, just once it's been routed to controller and a response has been served (ie no middleware).
 
-### Rack/Rails requests
+#### Rack/Rails requests
 
 To capture the whole request, there is a middleware which checks for the  `X-Singed` header to be 'true'. With curl, you can do this like:
 
@@ -90,7 +90,7 @@ PROTIP: use Chrome Developer Tools to record network activity, and copy requests
 
 This can also be enabled to always run by setting `SINGED_MIDDLEWARE_ALWAYS_CAPTURE=1`  in the environment.
 
-### Command Line
+#### Command Line
 
 There is a `singed` command line you can use that will record a flamegraph from the entirety of a command run:
 
@@ -101,6 +101,12 @@ $ bundle exec singed -- bin/rails runner 'Model.all.to_a'
 
 The flamegraph is opened afterwards.
 
+## How to read a flamegraph
+
+You've generated a flamegraph, now what? That's a great question. Here's some resources for getting started:
+
+- [technicalpickles/flamegraph-lighting-talk](https://github.com/technicalpickles/flamegraph-lighting-talk)
+- [Pairin' with Aaron: Flamegraphs and App Performance - YouTube](https://www.youtube.com/watch?v=9nvX3OHykGQ)
 
 ## Limitations
 

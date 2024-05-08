@@ -1,14 +1,5 @@
 module Kernel
-  def flamegraph(label = nil, open: true, io: $stdout, **stackprof_kwargs, &)
-    fg = Singed::Flamegraph::Stackprof.new(
-      label: label,
-      announce_io: io,
-      **stackprof_kwargs
-    )
-    result = fg.record(&)
-    fg.save
-    fg.open if open
-
-    result
+  def flamegraph(label = nil, profiler: nil, open: true, io: $stdout, **profiler_options, &)
+    Singed.profile(label, profiler: profiler, open: open, io: io, **profiler_options, &)
   end
 end

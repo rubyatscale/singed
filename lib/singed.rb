@@ -51,8 +51,23 @@ module Singed
     line
   end
 
-  def stackprof(label = "stackprof", open: true, announce_io: $stdout, **stackprof_options, &)
-    fg = Singed::Flamegraph::Stackprof.new(label: label, **stackprof_options)
+  def profiler_klass(profiler)
+    case profiler
+    when :stackprof, nil then Singed::Flamegraph::Stackprof
+    when :vernier then Singed::Flamegraph::Vernier
+    else
+      raise ArgumentError, "Unknown profiler: #{profiler}"
+    end
+  end
+
+  def profile(label = "flamegraph", profiler: nil, open: true, io: $stdout, **profiler_options, &)
+    profiler_klass = profiler_klass(profiler)
+    fg = profiler_klass.new(
+      label: label,
+      announce_io: io,
+      **profiler_options
+    )
+
     result = fg.record(&)
     fg.save
     fg.open if open
@@ -60,13 +75,12 @@ module Singed
     result
   end
 
-  def vernier(label = "vernier", open: true, announce_io: $stdout, **vernier_options, &)
-    fg = Singed::Flamegraph::Vernier.new(label: label, announce_io: announce_io, **vernier_options)
-    result = fg.record(&)
-    fg.save
-    fg.open if open
+  def stackprof(label = "stackprof", open: true, announce_io: $stdout, **stackprof_options, &)
+    profile(label, profiler: :stackprof, open: open, announce_io: announce_io, **stackprof_options, &)
+  end
 
-    result
+  def vernier(label = "vernier", open: true, announce_io: $stdout, **vernier_options, &)
+    profile(label, profiler: :vernier, open: open, announce_io: announce_io, **vernier_options, &)
   end
 
   autoload :Flamegraph, "singed/flamegraph"

@@ -47,6 +47,7 @@ module Singed
   end
 
   autoload :Flamegraph, "singed/flamegraph"
+  autoload :Profiler, "singed/profiler"
   autoload :Report, "singed/report"
   autoload :RackMiddleware, "singed/rack_middleware"
 end

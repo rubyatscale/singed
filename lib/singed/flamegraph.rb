@@ -20,36 +20,27 @@ module Singed
         @time = Time.now # rubocop:disable Rails/TimeZone
         @filename = self.class.generate_filename(label: label, time: @time)
       end
+
+      @profiler = Singed::Profiler::StackprofPlusSpeedscopeProfiler.new(filename: @filename)
     end
 
-    def record
+    def record(&block)
       return yield unless Singed.enabled?
       return yield if filename.exist? # file existing means its been captured already
 
-      result = nil
-      @profile = StackProf.run(mode: :wall, raw: true, ignore_gc: @ignore_gc, interval: @interval) do
-        result = yield
-      end
-      result
+      @profiler.record(&block)
     end
 
     def save
-      if filename.exist?
-        raise ArgumentError, "File #{filename} already exists"
-      end
-
-      report = Singed::Report.new(@profile)
-      report.filter!
-      filename.dirname.mkpath
-      filename.open("w") { |f| report.print_json(f) }
+      @profiler.save
     end
 
     def open
-      system open_command
+      @profiler.open
     end
 
     def open_command
-      @open_command ||= "npx speedscope #{@filename}"
+      @profiler.open_command
     end
 
     def self.generate_filename(label: nil, time: Time.now) # rubocop:disable Rails/TimeZone

@@ -21,7 +21,8 @@ module Singed
         @filename = self.class.generate_filename(label: label, time: @time)
       end
 
-      @profiler = Singed::Profiler::StackprofPlusSpeedscopeProfiler.new(filename: @filename)
+      @profiler = Singed::Profiler::VernierProfiler.new(filename: @filename)
+      # @profiler = Singed::Profiler::StackprofPlusSpeedscopeProfiler.new(filename: @filename)
     end
 
     def record(&block)

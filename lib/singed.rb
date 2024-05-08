@@ -3,6 +3,7 @@
 require "json"
 require "stackprof"
 require "colorize"
+require "vernier"
 
 module Singed
   extend self

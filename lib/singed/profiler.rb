@@ -7,11 +7,11 @@ module Singed
     end
 
     def record
-      raise UnimplementedError
+      raise NotImplementedError
     end
 
     def save
-      raise UnimplementedError
+      raise NotImplementedError
     end
 
     def open
@@ -19,7 +19,7 @@ module Singed
     end
 
     def open_command
-      raise UnimplementedError
+      raise NotImplementedError
     end
 
     class StackprofPlusSpeedscopeProfiler < Profiler
@@ -44,6 +44,22 @@ module Singed
         report.filter!
         filename.dirname.mkpath
         filename.open("w") { |f| report.print_json(f) }
+      end
+    end
+
+    class VernierProfiler < Profiler
+      def record
+        Vernier.run(out: filename.to_s) do
+          yield
+        end
+      end
+
+      def open_command
+        @open_command ||= "profile-viewer #{@filename}"
+      end
+
+      def save
+        # no-op, since it already writes out
       end
     end
   end

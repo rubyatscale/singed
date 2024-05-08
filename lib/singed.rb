@@ -51,8 +51,8 @@ module Singed
     line
   end
 
-  def stackprof(label = "stackprof", open: true, ignore_gc: false, interval: 1000, io: $stdout, &)
-    fg = Singed::Flamegraph::Stackprof.new(label: label, ignore_gc: ignore_gc, interval: interval)
+  def stackprof(label = "stackprof", open: true, announce_io: $stdout, **stackprof_options, &)
+    fg = Singed::Flamegraph::Stackprof.new(label: label, **stackprof_options)
     result = fg.record(&)
     fg.save
     fg.open if open
@@ -60,8 +60,8 @@ module Singed
     result
   end
 
-  def vernier(label = "vernier", open: true, interval: 1000, hooks: nil, gc: true, io: $stdout, &)
-    fg = Singed::Flamegraph::Vernier.new(label: label, interval: interval, hooks: hooks, gc: gc)
+  def vernier(label = "vernier", open: true, announce_io: $stdout, **vernier_options, &)
+    fg = Singed::Flamegraph::Vernier.new(label: label, announce_io: announce_io, **vernier_options)
     result = fg.record(&)
     fg.save
     fg.open if open

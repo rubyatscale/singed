@@ -46,13 +46,20 @@ module Singed
     end
 
     class Stackprof < Flamegraph
-      def initialize(label: nil, ignore_gc: false, interval: 1000)
+      DEFAULT_OPTIONS = {
+        mode: :wall,
+        raw: true,
+      }.freeze
+
+      def initialize(label: nil, announce_io: $stdout, **stackprof_options)
         super(label: label)
+        @stackprof_options = stackprof_options
       end
 
       def record(&block)
         result = nil
-        @profile = ::StackProf.run(mode: :wall, raw: true, ignore_gc: @ignore_gc, interval: @interval) do
+        stackprof_options = DEFAULT_OPTIONS.merge(@stackprof_options)
+        @profile = ::StackProf.run(**stackprof_options) do
           result = yield
         end
         result
@@ -76,15 +83,15 @@ module Singed
     end
 
     class Vernier < Flamegraph
-      def initialize(label: nil, interval: 1000, hooks: nil, gc: true)
-        super(label: label)
-        @interval = interval
-        @hooks = hooks || Singed.vernier_hooks
-        @gc = gc
+      def initialize(label: nil, announce_io: $stdout, **vernier_options)
+        super(label: label, announce_io: announce_io)
+
+        @vernier_options = {hooks: Singed.vernier_hooks}.merge(vernier_options)
       end
 
       def record
-        ::Vernier.run(out: filename.to_s, interval: @interval, hooks: @hooks, gc: @gc) do
+        vernier_options = {out: filename.to_s}.merge(@vernier_options)
+        ::Vernier.run(**vernier_options) do
           yield
         end
       end

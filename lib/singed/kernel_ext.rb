@@ -1,6 +1,10 @@
 module Kernel
-  def flamegraph(label = nil, open: true, ignore_gc: false, interval: 1000, io: $stdout, &)
-    fg = Singed::Flamegraph::Stackprof.new(label: label, ignore_gc: ignore_gc, interval: interval)
+  def flamegraph(label = nil, open: true, io: $stdout, **stackprof_kwargs, &)
+    fg = Singed::Flamegraph::Stackprof.new(
+      label: label,
+      announce_io: io,
+      **stackprof_kwargs
+    )
     result = fg.record(&)
     fg.save
     fg.open if open

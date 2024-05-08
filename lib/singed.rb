@@ -35,6 +35,10 @@ module Singed
     @backtrace_cleaner
   end
 
+  def vernier_hooks
+    @vernier_hooks ||= []
+  end
+
   def silence_line?(line)
     return backtrace_cleaner.silence_line?(line) if backtrace_cleaner
 
@@ -45,6 +49,24 @@ module Singed
     return backtrace_cleaner.filter_line(line) if backtrace_cleaner
 
     line
+  end
+
+  def stackprof(label = "stackprof", open: true, ignore_gc: false, interval: 1000, io: $stdout, &)
+    fg = Singed::Flamegraph::Stackprof.new(label: label, ignore_gc: ignore_gc, interval: interval)
+    result = fg.record(&)
+    fg.save
+    fg.open if open
+
+    result
+  end
+
+  def vernier(label = "vernier", open: true, interval: 1000, hooks: nil, gc: true, io: $stdout, &)
+    fg = Singed::Flamegraph::Vernier.new(label: label, interval: interval, hooks: hooks, gc: gc)
+    result = fg.record(&)
+    fg.save
+    fg.open if open
+
+    result
   end
 
   autoload :Flamegraph, "singed/flamegraph"

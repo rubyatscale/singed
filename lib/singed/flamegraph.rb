@@ -1,9 +1,10 @@
 module Singed
   class Flamegraph
-    attr_accessor :profile, :filename
+    attr_accessor :profile, :filename, :announce_io
 
-    def initialize(label: nil)
+    def initialize(label: nil, announce_io: $stdout)
       @time = Time.now
+      @announce_io = announce_io
       @filename ||= self.class.generate_filename(label: label, time: @time)
     end
 
@@ -23,8 +24,14 @@ module Singed
       raise NotImplementedError
     end
 
-    def open
-      system open_command
+    def open(open: true)
+      if open
+        # use npx, so we don't have to add it as a dependency
+        announce_io.puts "🔥📈 #{"Captured flamegraph, opening with".colorize(:bold).colorize(:red)}: #{open_command}"
+        system open_command
+      else
+        announce_io.puts "🔥📈 #{"Captured flamegraph to file".colorize(:bold).colorize(:red)}: #{filename}"
+      end
     end
 
     def self.generate_filename(label: nil, time: Time.now) # rubocop:disable Rails/TimeZone
@@ -39,13 +46,13 @@ module Singed
     end
 
     class Stackprof < Flamegraph
-      def initialize(label: nil, ignore_gc: false, interval: 1000, filename: nil)
+      def initialize(label: nil, ignore_gc: false, interval: 1000)
         super(label: label)
       end
 
       def record(&block)
         result = nil
-        @profile = StackProf.run(mode: :wall, raw: true, ignore_gc: @ignore_gc, interval: @interval) do
+        @profile = ::StackProf.run(mode: :wall, raw: true, ignore_gc: @ignore_gc, interval: @interval) do
           result = yield
         end
         result
@@ -69,8 +76,15 @@ module Singed
     end
 
     class Vernier < Flamegraph
+      def initialize(label: nil, interval: 1000, hooks: nil, gc: true)
+        super(label: label)
+        @interval = interval
+        @hooks = hooks || Singed.vernier_hooks
+        @gc = gc
+      end
+
       def record
-        ::Vernier.run(out: filename.to_s) do
+        ::Vernier.run(out: filename.to_s, interval: @interval, hooks: @hooks, gc: @gc) do
           yield
         end
       end

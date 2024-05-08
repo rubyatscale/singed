@@ -11,6 +11,8 @@ module Singed
       ActiveSupport.on_load(:action_controller) do
         ActionController::Base.include(Singed::ControllerExt)
       end
+
+      Singed.vernier_hooks << :rails
     end
 
     def self.init!

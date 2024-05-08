@@ -3,14 +3,7 @@ module Kernel
     fg = Singed::Flamegraph::Stackprof.new(label: label, ignore_gc: ignore_gc, interval: interval)
     result = fg.record(&)
     fg.save
-
-    if open
-      # use npx, so we don't have to add it as a dependency
-      io.puts "🔥📈 #{"Captured flamegraph, opening with".colorize(:bold).colorize(:red)}: #{fg.open_command}"
-      fg.open
-    else
-      io.puts "🔥📈 #{"Captured flamegraph to file".colorize(:bold).colorize(:red)}: #{fg.filename}"
-    end
+    fg.open if open
 
     result
   end

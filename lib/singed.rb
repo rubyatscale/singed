@@ -64,7 +64,7 @@ module Singed
     profiler_klass = profiler_klass(profiler)
     fg = profiler_klass.new(
       label: label,
-      announce_io: io,
+      announce_io: announce_io,
       **profiler_options
     )
 

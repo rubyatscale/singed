@@ -45,6 +45,15 @@ module Singed
       file
     end
 
+    def self.validate_options(klass, method_name, options)
+      method = klass.instance_method(:method_name)
+      options.each do |key, value|
+        if method.parameters.none? { |type, name| type == :key && name == key }
+          raise ArgumentError, "Unknown option #{key} for #{klass}.#{method_name}"
+        end
+      end
+    end
+
     class Stackprof < Flamegraph
       DEFAULT_OPTIONS = {
         mode: :wall,
@@ -80,6 +89,8 @@ module Singed
         # use npx, so we don't have to add it as a dependency
         @open_command ||= "npx speedscope #{@filename}"
       end
+
+
     end
 
     class Vernier < Flamegraph
@@ -91,6 +102,7 @@ module Singed
 
       def record
         vernier_options = {out: filename.to_s}.merge(@vernier_options)
+        validate_options(::Vernier, :run, vernier_options)
         ::Vernier.run(**vernier_options) do
           yield
         end

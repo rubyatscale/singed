@@ -51,7 +51,7 @@ module Singed
     line
   end
 
-  def profiler_klass(profiler)
+  def profiler_class_for(profiler)
     case profiler
     when :stackprof, nil then Singed::Flamegraph::Stackprof
     when :vernier then Singed::Flamegraph::Vernier
@@ -61,8 +61,9 @@ module Singed
   end
 
   def profile(label = "flamegraph", profiler: nil, open: true, announce_io: $stdout, **profiler_options, &)
-    profiler_klass = profiler_klass(profiler)
-    fg = profiler_klass.new(
+    profiler_class = profiler_class_for(profiler)
+
+    fg = profiler_class.new(
       label: label,
       announce_io: announce_io,
       **profiler_options

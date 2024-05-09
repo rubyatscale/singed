@@ -11,7 +11,7 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 2.7.0"
   spec.homepage = "https://github.com/rubyatscale/singed"
   spec.metadata = {
-    "source_code_uri" => "https://github.com/rubyatscale/singed.git",
+    "source_code_uri" => "https://github.com/rubyatscale/singed",
     "bug_tracker_uri" => "https://github.com/rubyatscale/singed/issues",
     "homepage_uri" => "https://github.com/rubyatscale/singed"
   }

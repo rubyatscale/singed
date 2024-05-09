@@ -11,6 +11,10 @@ jobs:
     if: github.repository == 'rubyatscale/singed'
     runs-on: ubuntu-latest
 
+    environment:
+      name: rubygems.org
+      url: https://rubygems.org/gems/singed
+
     permissions:
       contents: write
       id-token: write

@@ -60,7 +60,7 @@ module Singed
     end
   end
 
-  def profile(label = "flamegraph", profiler: nil, open: true, io: $stdout, **profiler_options, &)
+  def profile(label = "flamegraph", profiler: nil, open: true, announce_io: $stdout, **profiler_options, &)
     profiler_klass = profiler_klass(profiler)
     fg = profiler_klass.new(
       label: label,

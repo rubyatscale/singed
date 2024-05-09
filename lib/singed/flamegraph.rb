@@ -48,7 +48,7 @@ module Singed
     class Stackprof < Flamegraph
       DEFAULT_OPTIONS = {
         mode: :wall,
-        raw: true,
+        raw: true
       }.freeze
 
       def initialize(label: nil, announce_io: $stdout, **stackprof_options)

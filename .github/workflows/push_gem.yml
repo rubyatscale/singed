@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   push:
-    if: github.repository == 'rubyatscale/singed.git'
+    if: github.repository == 'rubyatscale/singed'
     runs-on: ubuntu-latest
 
     permissions:

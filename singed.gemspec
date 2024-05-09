@@ -11,9 +11,9 @@ Gem::Specification.new do |spec|
   spec.required_ruby_version = ">= 2.7.0"
   spec.homepage = "https://github.com/rubyatscale/singed"
   spec.metadata = {
-      "source_code_uri" => "https://github.com/rubyatscale/singed.git",
-      "bug_tracker_uri" => "https://github.com/rubyatscale/singed/issues",
-      "homepage_uri" => "https://github.com/rubyatscale/singed"
+    "source_code_uri" => "https://github.com/rubyatscale/singed.git",
+    "bug_tracker_uri" => "https://github.com/rubyatscale/singed/issues",
+    "homepage_uri" => "https://github.com/rubyatscale/singed"
   }
 
   spec.files = Dir["README.md", "*.gemspec", "lib/**/*", "exe/**/*"]
@@ -26,5 +26,4 @@ Gem::Specification.new do |spec|
 
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec"
-
 end

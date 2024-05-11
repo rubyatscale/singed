@@ -3,6 +3,7 @@
 require "json"
 require "stackprof"
 require "colorize"
+require "vernier"
 
 module Singed
   extend self
@@ -34,6 +35,10 @@ module Singed
     @backtrace_cleaner
   end
 
+  def vernier_hooks
+    @vernier_hooks ||= []
+  end
+
   def silence_line?(line)
     return backtrace_cleaner.silence_line?(line) if backtrace_cleaner
 
@@ -44,6 +49,39 @@ module Singed
     return backtrace_cleaner.filter_line(line) if backtrace_cleaner
 
     line
+  end
+
+  def profiler_class_for(profiler)
+    case profiler
+    when :stackprof, nil then Singed::Flamegraph::Stackprof
+    when :vernier then Singed::Flamegraph::Vernier
+    else
+      raise ArgumentError, "Unknown profiler: #{profiler}"
+    end
+  end
+
+  def profile(label = "flamegraph", profiler: nil, open: true, announce_io: $stdout, **profiler_options, &)
+    profiler_class = profiler_class_for(profiler)
+
+    fg = profiler_class.new(
+      label: label,
+      announce_io: announce_io,
+      **profiler_options
+    )
+
+    result = fg.record(&)
+    fg.save
+    fg.open if open
+
+    result
+  end
+
+  def stackprof(label = "stackprof", open: true, announce_io: $stdout, **stackprof_options, &)
+    profile(label, profiler: :stackprof, open: open, announce_io: announce_io, **stackprof_options, &)
+  end
+
+  def vernier(label = "vernier", open: true, announce_io: $stdout, **vernier_options, &)
+    profile(label, profiler: :vernier, open: open, announce_io: announce_io, **vernier_options, &)
   end
 
   autoload :Flamegraph, "singed/flamegraph"

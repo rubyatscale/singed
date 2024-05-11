@@ -23,6 +23,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency "colorize"
   spec.add_dependency "stackprof", ">= 0.2.13"
+  spec.add_dependency "vernier"
 
   spec.add_development_dependency "rake", "~> 13.0"
   spec.add_development_dependency "rspec"

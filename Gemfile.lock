@@ -4,6 +4,7 @@ PATH
     singed (0.2.2)
       colorize
       stackprof (>= 0.2.13)
+      vernier
 
 GEM
   remote: https://rubygems.org/
@@ -67,6 +68,7 @@ GEM
       lint_roller (~> 1.1)
       rubocop-performance (~> 1.20.2)
     unicode-display_width (2.5.0)
+    vernier (1.0.1)
 
 PLATFORMS
   ruby

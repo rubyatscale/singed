@@ -19,6 +19,9 @@ GEM
       ast (~> 2.4.1)
       racc
     racc (1.7.3)
+    rack (3.1.8)
+    rack-test (2.1.0)
+      rack (>= 1.3)
     rainbow (3.1.1)
     rake (13.0.6)
     regexp_parser (2.9.0)
@@ -72,6 +75,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  rack-test
   rake (~> 13.0)
   rspec
   singed!

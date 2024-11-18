@@ -6,6 +6,7 @@ source "https://rubygems.org"
 gemspec
 
 gem "activejob"
+gem "rack-test"
 gem "rake", "~> 13.0"
 gem "rspec"
 gem "rubyzip"

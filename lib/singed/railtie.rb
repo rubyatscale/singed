@@ -14,7 +14,7 @@ module Singed
     end
 
     def self.init!
-      Singed.output_directory = Rails.root.join("tmp/speedscope")
+      Singed.output_directory ||= Rails.root.join("tmp/speedscope")
       Singed.backtrace_cleaner = Rails.backtrace_cleaner
     end
   end

@@ -1,55 +1,37 @@
 module Singed
   class Flamegraph
-    attr_accessor :profile, :filename
+    attr_accessor :profile, :filename, :announce_io
 
-    def initialize(label: nil, ignore_gc: false, interval: 1000, filename: nil)
-      # it's been created elsewhere, ie rbspy
-      if filename
-        if ignore_gc
-          raise ArgumentError, "ignore_gc not supported when given an existing file"
-        end
-
-        if label
-          raise ArgumentError, "label not supported when given an existing file"
-        end
-
-        @filename = filename
-      else
-        @ignore_gc = ignore_gc
-        @interval = interval
-        @time = Time.now # rubocop:disable Rails/TimeZone
-        @filename = self.class.generate_filename(label: label, time: @time)
-      end
+    def initialize(label: nil, announce_io: $stdout)
+      @time = Time.now
+      @announce_io = announce_io
+      @filename ||= self.class.generate_filename(label: label, time: @time)
     end
 
-    def record
-      return yield unless Singed.enabled?
-      return yield if filename.exist? # file existing means its been captured already
+    def record(&block)
+      raise NotImplementedError
+    end
 
-      result = nil
-      @profile = StackProf.run(mode: :wall, raw: true, ignore_gc: @ignore_gc, interval: @interval) do
-        result = yield
-      end
-      result
+    def record?
+      Singed.enabled?
     end
 
     def save
-      if filename.exist?
-        raise ArgumentError, "File #{filename} already exists"
-      end
-
-      report = Singed::Report.new(@profile)
-      report.filter!
-      filename.dirname.mkpath
-      filename.open("w") { |f| report.print_json(f) }
-    end
-
-    def open
-      system open_command
+      raise NotImplementedError
     end
 
     def open_command
-      @open_command ||= "npx speedscope #{@filename}"
+      raise NotImplementedError
+    end
+
+    def open(open: true)
+      if open
+        # use npx, so we don't have to add it as a dependency
+        announce_io.puts "🔥📈 #{"Captured flamegraph, opening with".colorize(:bold).colorize(:red)}: #{open_command}"
+        system open_command
+      else
+        announce_io.puts "🔥📈 #{"Captured flamegraph to file".colorize(:bold).colorize(:red)}: #{filename}"
+      end
     end
 
     def self.generate_filename(label: nil, time: Time.now) # rubocop:disable Rails/TimeZone
@@ -61,6 +43,78 @@ module Singed
       pwd = Pathname.pwd
       file = file.relative_path_from(pwd) if file.absolute? && file.to_s.start_with?(pwd.to_s)
       file
+    end
+
+    def self.validate_options(klass, method_name, options)
+      method = klass.instance_method(:method_name)
+      options.each do |key, value|
+        if method.parameters.none? { |type, name| type == :key && name == key }
+          raise ArgumentError, "Unknown option #{key} for #{klass}.#{method_name}"
+        end
+      end
+    end
+
+    class Stackprof < Flamegraph
+      DEFAULT_OPTIONS = {
+        mode: :wall,
+        raw: true
+      }.freeze
+
+      def initialize(label: nil, announce_io: $stdout, **stackprof_options)
+        super(label: label)
+        @stackprof_options = stackprof_options
+      end
+
+      def record(&block)
+        result = nil
+        stackprof_options = DEFAULT_OPTIONS.merge(@stackprof_options)
+        @profile = ::StackProf.run(**stackprof_options) do
+          result = yield
+        end
+        result
+      end
+
+      def save
+        if filename.exist?
+          raise ArgumentError, "File #{filename} already exists"
+        end
+
+        report = Singed::Report.new(@profile)
+        report.filter!
+        filename.dirname.mkpath
+        filename.open("w") { |f| report.print_json(f) }
+      end
+
+      def open_command
+        # use npx, so we don't have to add it as a dependency
+        @open_command ||= "npx speedscope #{@filename}"
+      end
+
+
+    end
+
+    class Vernier < Flamegraph
+      def initialize(label: nil, announce_io: $stdout, **vernier_options)
+        super(label: label, announce_io: announce_io)
+
+        @vernier_options = {hooks: Singed.vernier_hooks}.merge(vernier_options)
+      end
+
+      def record
+        vernier_options = {out: filename.to_s}.merge(@vernier_options)
+        validate_options(::Vernier, :run, vernier_options)
+        ::Vernier.run(**vernier_options) do
+          yield
+        end
+      end
+
+      def open_command
+        @open_command ||= "profile-viewer #{@filename}"
+      end
+
+      def save
+        # no-op, since it already writes out
+      end
     end
   end
 end

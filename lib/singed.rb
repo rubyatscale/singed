@@ -2,7 +2,6 @@
 
 require "json"
 require "stackprof"
-require "colorize"
 
 module Singed
   extend self

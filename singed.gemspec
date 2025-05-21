@@ -3,7 +3,7 @@
 Gem::Specification.new do |spec|
   spec.name = "singed"
 
-  spec.version = "0.2.3"
+  spec.version = "0.3.0"
   spec.license = "MIT"
   spec.authors = ["Josh Nichols"]
   spec.email = ["josh.nichols@gusto.com"]
@@ -21,7 +21,6 @@ Gem::Specification.new do |spec|
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
-  spec.add_dependency "colorize"
   spec.add_dependency "stackprof", ">= 0.2.13"
 
   spec.add_development_dependency "rake", "~> 13.0"

@@ -106,7 +106,7 @@ The flamegraph is opened afterwards.
 
 When using the auto-opening feature, it's assumed that you are have a browser available on the same host you are profiling code.
 
-The `open` is expected to be available.
+The `open` command is expected to be available.
 
 ## Alternatives
 

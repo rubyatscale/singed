@@ -1,7 +1,7 @@
 module Kernel
-  def flamegraph(label = nil, open: true, ignore_gc: false, interval: 1000, io: $stdout, &)
+  def flamegraph(label = nil, open: true, ignore_gc: false, interval: 1000, io: $stdout, &block)
     fg = Singed::Flamegraph.new(label: label, ignore_gc: ignore_gc, interval: interval)
-    result = fg.record(&)
+    result = fg.record(&block)
     fg.save
 
     # avoid a dep on a colorizing gem by doing this ourselves

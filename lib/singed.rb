@@ -2,6 +2,7 @@
 
 require "json"
 require "stackprof"
+require "pathname"
 
 module Singed
   extend self

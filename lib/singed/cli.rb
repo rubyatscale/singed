@@ -27,6 +27,10 @@ module Singed
         @output_directory = directory
       end
 
+      opts.on("-r", "--rate RATE", Integer, "Sample rate for rbspy") do |rate|
+        @rate = rate
+      end
+
       opts.order(@argv) do |arg|
         opts.terminate if arg == "--"
         break
@@ -71,6 +75,7 @@ module Singed
       options = {
         format: "speedscope",
         file: filename.to_s,
+        rate: @rate,
         silent: nil
       }
 

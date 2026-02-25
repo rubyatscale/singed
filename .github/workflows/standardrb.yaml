@@ -3,11 +3,13 @@ name: StandardRB
 on: [push]
 
 jobs:
-  build:
+  standardrb:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      contents: write
     steps:
-    - uses: actions/checkout@v1
     - name: StandardRB Linter
-      uses: standardrb/standard-ruby-action@v0.0.5
+      uses: standardrb/standard-ruby-action@v1
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

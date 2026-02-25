@@ -47,6 +47,20 @@ flamegraph(open: false) {
 }
 ```
 
+### Explicit start and stop
+
+You can also start and stop the flamegraph explicitly:
+
+```ruby
+# config/boot.rb
+require "singed"
+Singed.output_directory ||= Dir.pwd + "/tmp/speedscope"
+Singed.start
+# Let some code to run here...
+# and then stop the flamegraph with e.g. rails runner 'Singed.stop'
+Singed.stop
+```
+
 ### RSpec
 
 If you are using RSpec, you can use the `flamegraph` metadata to capture it for you.

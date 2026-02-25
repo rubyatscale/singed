@@ -7,6 +7,8 @@ require "pathname"
 module Singed
   extend self
 
+  attr_reader :current_flamegraph
+
   # Where should flamegraphs be saved?
   def output_directory=(directory)
     @output_directory = Pathname.new(directory)
@@ -44,6 +46,28 @@ module Singed
     return backtrace_cleaner.filter_line(line) if backtrace_cleaner
 
     line
+  end
+
+  def start(label = nil, ignore_gc: false, interval: 1000)
+    return unless enabled?
+    return if profiling?
+
+    @current_flamegraph = Flamegraph.new(label: label, ignore_gc: ignore_gc, interval: interval)
+    @current_flamegraph.start
+  end
+
+  def stop
+    return nil unless profiling?
+
+    flamegraph = @current_flamegraph
+    @current_flamegraph = nil
+    flamegraph.stop
+    flamegraph.save
+    flamegraph
+  end
+
+  def profiling?
+    @current_flamegraph&.started? || false
   end
 
   autoload :Flamegraph, "singed/flamegraph"

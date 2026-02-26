@@ -90,6 +90,38 @@ PROTIP: use Chrome Developer Tools to record network activity, and copy requests
 
 This can also be enabled to always run by setting `SINGED_MIDDLEWARE_ALWAYS_CAPTURE=1`  in the environment.
 
+### Sidekiq
+
+If you are using Sidekiq, you can use the `Singed::Sidekiq::ServerMiddleware` to capture flamegraphs for you.
+
+```ruby
+require "singed/sidekiq"
+
+Sidekiq.configure_server do |config|
+  config.server_middleware do |chain|
+    chain.add Singed::Sidekiq::ServerMiddleware
+  end
+end
+```
+
+To capture flamegraphs for all jobs, you can set the `SINGED_MIDDLEWARE_ALWAYS_CAPTURE` environment variable to `true` the same way as the Rack middleware.
+
+To capture flamegraphs for a specific job, you can set the `x-singed` key in the job payload to `true`.
+
+```ruby
+MyJob.set(x-singed: true).perform_async
+```
+
+Or define a `capture_flamegraph?` method on the job class:
+
+```ruby
+class MyJob
+  def self.capture_flamegraph?(payload)
+    payload["flamegraph"]
+  end
+end
+```
+
 ### Command Line
 
 There is a `singed` command line you can use that will record a flamegraph from the entirety of a command run:

@@ -21,7 +21,7 @@ jobs:
         with:
           ruby-version: ${{ matrix.ruby }}
       - name: Install bundler
-        run: gem install bundler -v 4.0.7
+        run: gem install bundler
       - name: Install dependencies
         run: bundle install
       - run: bundle exec rspec

@@ -8,7 +8,7 @@ Gem::Specification.new do |spec|
   spec.authors = ["Josh Nichols"]
   spec.email = ["josh.nichols@gusto.com"]
   spec.summary = "Quick and easy way to get flamegraphs from a specific part of your code base"
-  spec.required_ruby_version = ">= 3.1.0"
+  spec.required_ruby_version = ">= 3.2.0"
   spec.homepage = "https://github.com/rubyatscale/singed"
   spec.metadata = {
     "source_code_uri" => "https://github.com/rubyatscale/singed",

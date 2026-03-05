@@ -45,11 +45,11 @@ module Singed
     end
 
     def open
-      system open_command
+      Singed::Speedscope.open(@filename)
     end
 
     def open_command
-      @open_command ||= "npx speedscope #{@filename}"
+      Singed::Speedscope.open_command(@filename)
     end
 
     def self.generate_filename(label: nil, time: Time.now) # rubocop:disable Rails/TimeZone

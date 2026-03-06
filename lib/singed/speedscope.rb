@@ -5,6 +5,8 @@ require "tmpdir"
 
 module Singed
   module Speedscope
+    # Take latest version from https://github.com/jlfwong/speedscope/releases
+    # that have ZIP archive with self-contained version published
     VERSION = "1.24.0"
 
     class << self

@@ -16,7 +16,7 @@ Gem::Specification.new do |spec|
     "homepage_uri" => "https://github.com/rubyatscale/singed"
   }
 
-  spec.files = Dir["README.md", "*.gemspec", "lib/**/*", "exe/**/*"]
+  spec.files = Dir["README.md", "*.gemspec", "lib/**/*", "exe/**/*", "vendor/speedscope/**/*"]
   spec.bindir = "exe"
   spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
   spec.require_paths = ["lib"]

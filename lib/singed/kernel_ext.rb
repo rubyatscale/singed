@@ -8,7 +8,6 @@ module Kernel
     bright_red = "\e[91m"
     none = "\e[0m"
     if open
-      # use npx, so we don't have to add it as a dependency
       io.puts "🔥📈 #{bright_red}Captured flamegraph, opening with#{none}: #{fg.open_command}"
       fg.open
     else

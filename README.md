@@ -58,8 +58,13 @@ Singed.output_directory ||= Dir.pwd + "/tmp/speedscope"
 Singed.start
 # Let some code to run here...
 # and then stop the flamegraph with e.g. rails runner 'Singed.stop'
-Singed.stop
+flamegraph = Singed.stop
+# The flamegraph is saved to the output directory
+# Open it with your browser:
+flamegraph.open
 ```
+
+Note that `Singed.start` can't be run multiple times in parallel, instantiate multiple `Singed::Flamegraph` objects instead and call `start` on them.
 
 ### RSpec
 

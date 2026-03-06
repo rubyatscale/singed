@@ -6,44 +6,37 @@ require "pathname"
 RSpec.describe Singed do
   around do |example|
     original_output_directory = Singed.output_directory
+    Singed.output_directory = Dir.mktmpdir("singed-spec")
     original_enabled = Singed.enabled?
     begin
       example.run
     ensure
-      Singed.output_directory = original_output_directory if original_output_directory
+      Singed.output_directory = original_output_directory
       Singed.enabled = original_enabled
       Singed.instance_variable_set(:@current_flamegraph, nil)
     end
   end
 
   describe ".start" do
-    before do
-      Singed.enabled = true
-      Singed.output_directory = Dir.mktmpdir("singed-spec")
-    end
+    before { Singed.enabled = true }
 
     it "creates a current flamegraph and starts profiling" do
-      Singed.start
+      current_flamegraph = Singed.start
 
-      expect(Singed.current_flamegraph).to be_a(Singed::Flamegraph)
+      expect(current_flamegraph).to be_a(Singed::Flamegraph)
       expect(Singed.profiling?).to be true
-      expect(Singed.current_flamegraph.started?).to be true
+      expect(current_flamegraph.started?).to be true
     end
 
     it "does nothing when already profiling" do
       Singed.start
-      first = Singed.current_flamegraph
-      Singed.start
-
-      expect(Singed.current_flamegraph).to be first
+      expect(Singed.start).to be_nil
     end
 
     it "does nothing when disabled" do
       Singed.enabled = false
-      Singed.start
-
-      expect(Singed.current_flamegraph).to be_nil
-      expect(Singed.profiling?).to be false
+      expect(Singed.start).to be_nil
+      expect(Singed.profiling?).to be_falsey
     end
   end
 
@@ -65,7 +58,6 @@ RSpec.describe Singed do
 
       expect(flamegraph).to be_a(Singed::Flamegraph)
       expect(Singed.profiling?).to be false
-      expect(Singed.current_flamegraph).to be_nil
 
       # Profile data is returned (StackProf results hash)
       expect(flamegraph.profile).to be_a(Hash)

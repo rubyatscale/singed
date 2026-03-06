@@ -7,11 +7,9 @@ require "pathname"
 module Singed
   extend self
 
-  attr_reader :current_flamegraph
-
   # Where should flamegraphs be saved?
   def output_directory=(directory)
-    @output_directory = Pathname.new(directory)
+    @output_directory = directory && Pathname.new(directory)
   end
 
   def self.output_directory
@@ -53,7 +51,7 @@ module Singed
     return if profiling?
 
     @current_flamegraph = Flamegraph.new(label: label, ignore_gc: ignore_gc, interval: interval)
-    @current_flamegraph.start
+    @current_flamegraph.tap(&:start)
   end
 
   def stop

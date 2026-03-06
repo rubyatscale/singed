@@ -6,7 +6,7 @@ require "active_job"
 require "singed/sidekiq"
 require_relative "../support/sidekiq"
 
-RSpec.describe Singed::Sidekiq::ServerMiddleware do
+RSpec.describe Singed::Sidekiq::ServerMiddleware, sidekiq: true do
   subject { job_class.set(job_modifiers).perform_async(*job_args) }
 
   let(:job_class) { SidekiqPlainJob }

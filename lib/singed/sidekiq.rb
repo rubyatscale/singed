@@ -16,9 +16,10 @@ module Singed
       TRUTHY_STRINGS = %w[true 1 yes].freeze
 
       def capture_flamegraph?(job_instance, job_payload)
-        return job_payload["x-singed"] if job_payload.key?("x-singed")
+        return TRUTHY_STRINGS.include?(job_payload["x-singed"].to_s) if job_payload.key?("x-singed")
 
-        job_class = self.job_class(job_instance, job_payload)
+        job_class = job_class(job_instance, job_payload)
+        return false unless job_class
         return job_class.capture_flamegraph?(job_payload) if job_class.respond_to?(:capture_flamegraph?)
 
         TRUTHY_STRINGS.include?(ENV.fetch("SINGED_MIDDLEWARE_ALWAYS_CAPTURE", "false"))
@@ -35,6 +36,8 @@ module Singed
         return job_class.constantize if job_class.respond_to?(:constantize)
 
         Object.const_get(job_class.to_s)
+      rescue NameError
+        nil
       end
     end
   end

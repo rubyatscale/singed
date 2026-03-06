@@ -9,7 +9,7 @@ module Singed
 
   # Where should flamegraphs be saved?
   def output_directory=(directory)
-    @output_directory = Pathname.new(directory)
+    @output_directory = directory && Pathname.new(directory)
   end
 
   def self.output_directory

@@ -15,8 +15,14 @@ RSpec.configure do |config|
 
     ActiveJob::Base.queue_adapter = :sidekiq
     ActiveJob::Base.logger = Logger.new(nil)
+  end
 
+  config.around(:each, sidekiq: true) do |example|
+    orig_dir = Singed.output_directory
     Singed.output_directory = Dir.mktmpdir("singed-sidekiq-spec")
+    example.run
+  ensure
+    Singed.output_directory = orig_dir
   end
 end
 

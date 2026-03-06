@@ -109,7 +109,7 @@ To capture flamegraphs for all jobs, you can set the `SINGED_MIDDLEWARE_ALWAYS_C
 To capture flamegraphs for a specific job, you can set the `x-singed` key in the job payload to `true`.
 
 ```ruby
-MyJob.set(x-singed: true).perform_async
+MyJob.set("x-singed" => true).perform_async
 ```
 
 Or define a `capture_flamegraph?` method on the job class:

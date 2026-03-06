@@ -9,15 +9,11 @@ module Singed
     end
 
     def call(env)
-      status, headers, body = if capture_flamegraph?(env)
-        flamegraph do
-          @app.call(env)
-        end
+      if capture_flamegraph?(env)
+        flamegraph { @app.call(env) }
       else
         @app.call(env)
       end
-
-      [status, headers, body]
     end
 
     def capture_flamegraph?(env)

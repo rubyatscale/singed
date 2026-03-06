@@ -9,7 +9,7 @@ GEM
   specs:
     ast (2.4.3)
     diff-lcs (1.5.0)
-    json (2.18.1)
+    json (2.19.0)
     language_server-protocol (3.17.0.5)
     lint_roller (1.1.0)
     parallel (1.27.0)
@@ -21,7 +21,6 @@ GEM
     rainbow (3.1.1)
     rake (13.0.6)
     regexp_parser (2.11.3)
-    rexml (3.4.2)
     rspec (3.12.0)
       rspec-core (~> 3.12.0)
       rspec-expectations (~> 3.12.0)

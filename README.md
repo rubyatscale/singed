@@ -47,6 +47,25 @@ flamegraph(open: false) {
 }
 ```
 
+### Explicit start and stop
+
+You can also start and stop the flamegraph explicitly:
+
+```ruby
+# config/boot.rb
+require "singed"
+Singed.output_directory ||= Dir.pwd + "/tmp/speedscope"
+Singed.start
+# Let some code to run here...
+# and then stop the flamegraph with e.g. rails runner 'Singed.stop'
+flamegraph = Singed.stop
+# The flamegraph is saved to the output directory
+# Open it with your browser:
+flamegraph.open
+```
+
+Note that `Singed.start` can't be run multiple times in parallel, instantiate multiple `Singed::Flamegraph` objects instead and call `start` on them.
+
 ### RSpec
 
 If you are using RSpec, you can use the `flamegraph` metadata to capture it for you.
@@ -89,6 +108,38 @@ curl -H 'X-Singed: true' https://localhost:3000
 PROTIP: use Chrome Developer Tools to record network activity, and copy requests as a curl command. Add `-H 'X-Singed: true'` to it, and you get flamegraphs!
 
 This can also be enabled to always run by setting `SINGED_MIDDLEWARE_ALWAYS_CAPTURE=1`  in the environment.
+
+### Sidekiq
+
+If you are using Sidekiq, you can use the `Singed::Sidekiq::ServerMiddleware` to capture flamegraphs for you.
+
+```ruby
+require "singed/sidekiq"
+
+Sidekiq.configure_server do |config|
+  config.server_middleware do |chain|
+    chain.add Singed::Sidekiq::ServerMiddleware
+  end
+end
+```
+
+To capture flamegraphs for all jobs, you can set the `SINGED_MIDDLEWARE_ALWAYS_CAPTURE` environment variable to `true` the same way as the Rack middleware.
+
+To capture flamegraphs for a specific job, you can set the `x-singed` key in the job payload to `true`.
+
+```ruby
+MyJob.set("x-singed" => true).perform_async
+```
+
+Or define a `capture_flamegraph?` method on the job class:
+
+```ruby
+class MyJob
+  def self.capture_flamegraph?(payload)
+    payload["flamegraph"]
+  end
+end
+```
 
 ### Command Line
 

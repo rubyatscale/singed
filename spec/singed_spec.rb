@@ -1,7 +1,6 @@
 # frozen_string_literal: true
 
 require "tempfile"
-require "pathname"
 
 RSpec.describe Singed do
   around do |example|

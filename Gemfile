@@ -7,5 +7,7 @@ gemspec
 
 gem "activejob"
 gem "rake", "~> 13.0"
+gem "rspec"
+gem "rubyzip"
 gem "sidekiq"
 gem "standard"

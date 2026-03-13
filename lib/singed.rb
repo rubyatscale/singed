@@ -71,6 +71,7 @@ module Singed
   autoload :Flamegraph, "singed/flamegraph"
   autoload :Report, "singed/report"
   autoload :RackMiddleware, "singed/rack_middleware"
+  autoload :Speedscope, "singed/speedscope"
 end
 
 require "singed/kernel_ext"

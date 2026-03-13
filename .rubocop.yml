@@ -1,2 +1,12 @@
 AllCops:
-  TargetRubyVersion: 2.7
+  TargetRubyVersion: 3.2
+
+require:
+  - standard
+  - standard-custom
+  - standard-performance
+
+inherit_gem:
+  standard: config/base.yml
+  standard-custom: config/base.yml
+  standard-performance: config/base.yml

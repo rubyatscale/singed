@@ -1,7 +1,6 @@
 require "shellwords"
 require "tmpdir"
 require "optionparser"
-require "pathname"
 
 # NOTE: we defer requiring singed until we run. that lets Rails load it if its in the gemfile, so the railtie has had a chance to run
 

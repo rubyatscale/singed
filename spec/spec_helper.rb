@@ -15,8 +15,17 @@
 # See https://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 
 require "singed"
+require "tmpdir"
 
 RSpec.configure do |config|
+  config.around do |example|
+    Dir.mktmpdir("singed-spec") do |dir|
+      Singed.output_directory = dir
+      example.run
+    end
+  ensure
+    Singed.output_directory = nil
+  end
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest
   # assertions if you prefer.

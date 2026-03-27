@@ -118,7 +118,6 @@ PLATFORMS
 
 DEPENDENCIES
   activejob
-  rack-test
   rake (~> 13.0)
   rspec
   rubyzip

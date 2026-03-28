@@ -19,12 +19,13 @@ require "tmpdir"
 
 RSpec.configure do |config|
   config.around do |example|
+    original_output_directory = Singed.output_directory
     Dir.mktmpdir("singed-spec") do |dir|
       Singed.output_directory = dir
       example.run
     end
   ensure
-    Singed.output_directory = nil
+    Singed.output_directory = original_output_directory
   end
   # rspec-expectations config goes here. You can use an alternate
   # assertion/expectation library such as wrong or the stdlib/minitest

@@ -1,19 +1,12 @@
 # frozen_string_literal: true
 
-require "tempfile"
-
 RSpec.describe Singed do
   around do |example|
-    original_output_directory = Singed.output_directory
-    Singed.output_directory = Dir.mktmpdir("singed-spec")
     original_enabled = Singed.enabled?
-    begin
-      example.run
-    ensure
-      Singed.output_directory = original_output_directory
-      Singed.enabled = original_enabled
-      Singed.instance_variable_set(:@current_flamegraph, nil)
-    end
+    example.run
+  ensure
+    Singed.enabled = original_enabled
+    Singed.instance_variable_set(:@current_flamegraph, nil)
   end
 
   describe ".start" do
@@ -42,7 +35,6 @@ RSpec.describe Singed do
   describe ".stop" do
     before do
       Singed.enabled = true
-      Singed.output_directory = Dir.mktmpdir("singed-spec")
     end
 
     it "returns nil when not profiling" do

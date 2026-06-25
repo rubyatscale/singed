@@ -6,7 +6,7 @@ source "https://rubygems.org"
 gemspec
 
 gem "activejob"
-gem "rake", "~> 13.0"
+gem "rake", "~> 13.4"
 gem "rspec"
 gem "rubyzip"
 gem "sidekiq"

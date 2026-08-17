@@ -1,5 +1,7 @@
 name: CI Test
 on: [push, pull_request]
+permissions:
+  contents: read
 jobs:
   build:
     name: Ruby ${{ matrix.ruby }}

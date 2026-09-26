@@ -1,12 +1,27 @@
-AllCops:
-  TargetRubyVersion: 3.3
-
-require:
-  - standard
-  - standard-custom
-  - standard-performance
+inherit_mode:
+  merge:
+    - Exclude
+    - Include
 
 inherit_gem:
-  standard: config/base.yml
-  standard-custom: config/base.yml
-  standard-performance: config/base.yml
+  rubocop-gusto:
+    - config/default.yml
+    - config/sidekiq.yml
+
+plugins:
+  - rubocop-gusto
+  - rubocop-rspec
+  - rubocop-performance
+  - rubocop-rake
+
+AllCops:
+  TargetRubyVersion: 3.3
+  Exclude:
+    - 'vendor/**/*'
+
+# singed does not use Sorbet: there is no sorbet/ config, no sorbet runtime dependency, and no
+# typecheck step. The Sorbet cops would only add `# typed:` sigils that nothing reads, and
+# `# typed: strict` would claim a level of typing this gem does not have. rubocop-gusto's own
+# .rubocop.yml disables the department for the same reason.
+Sorbet:
+  Enabled: false

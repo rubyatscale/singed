@@ -17,8 +17,9 @@ RSpec.describe Singed::ControllerExt do
     end
   end
 
+  # Kernel#flamegraph makes every object respond to :flamegraph, so check where the method comes from.
   it "adds the flamegraph class method when included" do
-    expect(controller_class).to respond_to(:flamegraph)
+    expect(controller_class.method(:flamegraph).owner).to eq(Singed::ControllerExt::ClassMethods)
   end
 
   it "wraps the target action in a flamegraph" do

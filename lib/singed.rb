@@ -4,9 +4,9 @@ require "json"
 require "stackprof"
 
 module Singed
-  # Every method below is both a module method (Singed.start) and a public instance method of
-  # Singed, which is how the gem has shipped since its first release. `class << self` would
-  # remove the instance methods for anyone who includes or extends Singed.
+  # Methods defined with plain `def` below are both module methods (Singed.start) and public
+  # instance methods of Singed, which is how the gem has shipped since its first release.
+  # `class << self` would remove those instance methods for anyone who includes or extends Singed.
   extend self # rubocop:disable Style/ModuleFunction
 
   # Where should flamegraphs be saved?

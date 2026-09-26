@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module ActiveSupport
   class BacktraceCleaner
     def filter_line(line)

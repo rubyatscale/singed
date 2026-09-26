@@ -21,7 +21,7 @@ RSpec.describe Singed::Speedscope do
 
         described_class.open(profile_path)
 
-        expect(described_class).to have_received(:system).with(described_class.send(:os_open_command), %r{\Afile://})
+        expect(described_class).to have_received(:system).with(described_class.__send__(:os_open_command), %r(\Afile://))
       end
     end
 
@@ -42,36 +42,36 @@ RSpec.describe Singed::Speedscope do
 
   describe ".os_open_command" do
     it "returns a command and does not raise" do
-      expect { described_class.send(:os_open_command) }.not_to raise_error
-      expect(described_class.send(:os_open_command)).to match(/\A(start|open|xdg-open)\z/)
+      expect { described_class.__send__(:os_open_command) }.not_to raise_error
+      expect(described_class.__send__(:os_open_command)).to match(/\A(start|open|xdg-open)\z/)
     end
 
     context "when host_os is stubbed" do
-      subject { described_class.send(:os_open_command) }
+      subject { described_class.__send__(:os_open_command) }
 
       before do
         allow(RbConfig::CONFIG).to receive(:[]).with("host_os").and_return(stubbed_os)
       end
 
-      context "on Windows" do
+      context "when running on Windows" do
         let(:stubbed_os) { "mingw32" }
 
         it { is_expected.to eq("start") }
       end
 
-      context "on MacOS" do
+      context "when running on macOS" do
         let(:stubbed_os) { "darwin22.0" }
 
         it { is_expected.to eq("open") }
       end
 
-      context "on Linux" do
+      context "when running on Linux" do
         let(:stubbed_os) { "linux-gnu" }
 
         it { is_expected.to eq("xdg-open") }
       end
 
-      context "on unsupported OS" do
+      context "when running on an unsupported OS" do
         let(:stubbed_os) { "unknown-os" }
 
         it "raises error" do

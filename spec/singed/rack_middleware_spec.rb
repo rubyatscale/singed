@@ -5,8 +5,8 @@ describe Singed::RackMiddleware do
     instance.call(env)
   end
 
-  let(:app_response) { [200, {"content-type" => "text/plain"}, ["OK"]] }
-  let(:app) { ->(*) { app_response } }
+  let(:app_response) { [200, { "content-type" => "text/plain" }, ["OK"]] }
+  let(:app) { -> (*) { app_response } }
   let(:instance) { described_class.new(app) }
   let(:env) { Rack::MockRequest.env_for("/", headers) }
   let(:headers) { {} }
@@ -22,7 +22,7 @@ describe Singed::RackMiddleware do
 
   context "when enabled" do
     before do
-      allow_any_instance_of(Singed::Flamegraph).to receive(:open)
+      allow(Singed::Speedscope).to receive(:open)
       allow(instance).to receive(:capture_flamegraph?).and_return(true)
     end
 
@@ -47,7 +47,7 @@ describe Singed::RackMiddleware do
     it { is_expected.to be false }
 
     context "when HTTP_X_SINGED is true" do
-      let(:headers) { {"HTTP_X_SINGED" => "true"} }
+      let(:headers) { { "HTTP_X_SINGED" => "true" } }
 
       it { is_expected.to be true }
     end
@@ -66,7 +66,7 @@ describe Singed::RackMiddleware do
         described_class.remove_instance_variable(:@always_capture) if described_class.instance_variable_defined?(:@always_capture)
       end
 
-      %w[true 1 yes].each do |truthy_value|
+      %w(true 1 yes).each do |truthy_value|
         context "when SINGED_MIDDLEWARE_ALWAYS_CAPTURE=#{truthy_value}" do
           before { ENV["SINGED_MIDDLEWARE_ALWAYS_CAPTURE"] = truthy_value }
 

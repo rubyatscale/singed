@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Singed
   class Report < StackProf::Report
     def filter!
@@ -27,7 +29,7 @@ module Singed
       # list.each{ |_addr, frame| frame[:edges]&.delete_if{ |k,v| list[k].nil? } }
       # end copy-pasted section
 
-      list.each do |_addr, frame|
+      list.each_value do |frame|
         frame[:file] = Singed.filter_line(frame[:file])
       end
 

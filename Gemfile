@@ -8,6 +8,6 @@ gemspec
 gem "activejob"
 gem "rake", "~> 13.4"
 gem "rspec"
+gem "rubocop-gusto", require: false
 gem "rubyzip"
 gem "sidekiq"
-gem "standard"

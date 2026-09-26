@@ -4,7 +4,10 @@ require "json"
 require "stackprof"
 
 module Singed
-  extend self
+  # Methods defined with plain `def` below are both module methods (Singed.start) and public
+  # instance methods of Singed, which is how the gem has shipped since its first release.
+  # `class << self` would remove those instance methods for anyone who includes or extends Singed.
+  extend self # rubocop:disable Style/ModuleFunction
 
   # Where should flamegraphs be saved?
   def output_directory=(directory)
@@ -49,7 +52,7 @@ module Singed
     return unless enabled?
     return if profiling?
 
-    @current_flamegraph = Flamegraph.new(label: label, ignore_gc: ignore_gc, interval: interval)
+    @current_flamegraph = Flamegraph.new(label:, ignore_gc:, interval:)
     @current_flamegraph.tap(&:start)
   end
 

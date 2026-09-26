@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "singed"
 
 RSpec.configure do |config|

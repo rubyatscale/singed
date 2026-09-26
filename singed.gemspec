@@ -13,12 +13,12 @@ Gem::Specification.new do |spec|
   spec.metadata = {
     "source_code_uri" => "https://github.com/rubyatscale/singed",
     "bug_tracker_uri" => "https://github.com/rubyatscale/singed/issues",
-    "homepage_uri" => "https://github.com/rubyatscale/singed"
+    "homepage_uri" => "https://github.com/rubyatscale/singed",
   }
 
   spec.files = Dir["README.md", "*.gemspec", "lib/**/*", "exe/**/*", "vendor/speedscope/**/*"]
   spec.bindir = "exe"
-  spec.executables = spec.files.grep(%r{\Aexe/}) { |f| File.basename(f) }
+  spec.executables = spec.files.grep(%r(\Aexe/)) { |f| File.basename(f) }
   spec.require_paths = ["lib"]
 
   spec.add_dependency "stackprof", ">= 0.2.13"

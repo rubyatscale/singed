@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "singed/sidekiq"
 
 RSpec.configure do |config|
@@ -19,7 +21,6 @@ end
 
 # Sidekiq doesn't invoke middlewares in inline testingmode, so we need to invoke it oursleves
 module SidekiqTestingInlineWithMiddlewares
-  # rubocop:disable Metrics/AbcSize
   def push(job)
     return super unless Sidekiq::Testing.inline?
 
@@ -34,7 +35,6 @@ module SidekiqTestingInlineWithMiddlewares
     end
     job["jid"]
   end
-  # rubocop:enable Metrics/AbcSize
 end
 
 class SidekiqPlainJob

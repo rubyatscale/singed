@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "singed/backtrace_cleaner_ext"
 require "singed/controller_ext"
 

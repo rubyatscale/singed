@@ -1,10 +1,10 @@
 # frozen_string_literal: true
 
+require "active_support/concern"
+
 module Singed
   module ControllerExt
-    def self.included(base)
-      base.extend(ClassMethods)
-    end
+    extend ActiveSupport::Concern
 
     module ClassMethods
       # Define an around_action to generate flamegraph for a controller action.

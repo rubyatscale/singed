@@ -22,7 +22,7 @@ describe Singed::RackMiddleware do
 
   context "when enabled" do
     before do
-      allow_any_instance_of(Singed::Flamegraph).to receive(:open)
+      allow(Singed::Speedscope).to receive(:open)
       allow(instance).to receive(:capture_flamegraph?).and_return(true)
     end
 

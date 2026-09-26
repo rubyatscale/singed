@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-describe Kernel, "extension" do
+describe Kernel do
   let(:flamegraph) do
     instance_double(Singed::Flamegraph)
   end
@@ -17,7 +17,7 @@ describe Kernel, "extension" do
 
   it "works without any arguments" do
     # * except what's needed to test
-    # note: use Object.new to get the actual flamegraph kernel extension, instead of the rspec-specific flamegraph
+    # NOTE: use Object.new to get the actual flamegraph kernel extension, instead of the rspec-specific flamegraph
     Object.new.flamegraph(io:) do
     end
 
@@ -32,7 +32,16 @@ describe Kernel, "extension" do
     expect(Singed::Flamegraph).to have_received(:new).with(label: "yellowjackets", ignore_gc: true, interval: 2000)
   end
 
-  context "default" do
+  context "with default options" do
+    it "opens" do
+      Object.new.flamegraph(io:) do
+      end
+
+      expect(flamegraph).to have_received(:open)
+    end
+  end
+
+  context "with open: true" do
     it "opens" do
       Object.new.flamegraph(open: true, io:) do
       end
@@ -41,16 +50,7 @@ describe Kernel, "extension" do
     end
   end
 
-  context "open: true" do
-    it "opens" do
-      Object.new.flamegraph(open: true, io:) do
-      end
-
-      expect(flamegraph).to have_received(:open)
-    end
-  end
-
-  context "open: false" do
+  context "with open: false" do
     it "doesn't open" do
       Object.new.flamegraph(open: false, io:) do
       end

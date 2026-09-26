@@ -5,7 +5,7 @@ module Singed
     class ServerMiddleware
       include ::Sidekiq::ServerMiddleware
 
-      def call(job_instance, job_payload, queue, &block)
+      def call(job_instance, job_payload, _queue, &block)
         return block.call unless capture_flamegraph?(job_instance, job_payload)
 
         flamegraph(flamegraph_label(job_instance, job_payload), &block)
@@ -13,7 +13,7 @@ module Singed
 
       private
 
-      TRUTHY_STRINGS = %w[true 1 yes].freeze
+      TRUTHY_STRINGS = %w(true 1 yes).freeze
 
       def capture_flamegraph?(job_instance, job_payload)
         return TRUTHY_STRINGS.include?(job_payload["x-singed"].to_s) if job_payload.key?("x-singed")

@@ -21,7 +21,7 @@ RSpec.describe Singed::Speedscope do
 
         described_class.open(profile_path)
 
-        expect(described_class).to have_received(:system).with(described_class.send(:os_open_command), %r{\Afile://})
+        expect(described_class).to have_received(:system).with(described_class.send(:os_open_command), %r(\Afile://))
       end
     end
 

@@ -52,4 +52,4 @@ end
 Rake::Task[:build].enhance ["speedscope:vendor"]
 Rake::Task[:clobber].enhance ["speedscope:clobber"]
 
-task default: %i[]
+task default: %i()

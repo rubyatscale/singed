@@ -1,12 +1,11 @@
 # frozen_string_literal: true
 
-require "spec_helper"
 require "sidekiq"
 require "active_job"
 require "singed/sidekiq"
 require_relative "../support/sidekiq"
 
-RSpec.describe Singed::Sidekiq::ServerMiddleware, sidekiq: true do
+RSpec.describe Singed::Sidekiq::ServerMiddleware, :sidekiq do
   subject { job_class.set(job_modifiers).perform_async(*job_args) }
 
   let(:job_class) { SidekiqPlainJob }
@@ -26,7 +25,7 @@ RSpec.describe Singed::Sidekiq::ServerMiddleware, sidekiq: true do
     end
 
     context "when x-singed payload is true" do
-      let(:job_modifiers) { {"x-singed" => true} }
+      let(:job_modifiers) { { "x-singed" => true } }
 
       it "wraps execution in flamegraph when x-singed is true" do
         expect_any_instance_of(described_class).to receive(:flamegraph)
@@ -46,7 +45,7 @@ RSpec.describe Singed::Sidekiq::ServerMiddleware, sidekiq: true do
     end
 
     context "when payload satisfies capture_flamegraph?" do
-      let(:job_modifiers) { {"x-flamegraph" => true} }
+      let(:job_modifiers) { { "x-flamegraph" => true } }
 
       it "wraps execution in flamegraph when capture_flamegraph? returns true" do
         expect_any_instance_of(described_class).to receive(:flamegraph)

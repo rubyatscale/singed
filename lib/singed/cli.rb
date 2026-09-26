@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require "shellwords"
 require "tmpdir"
 require "optionparser"
@@ -75,14 +77,14 @@ module Singed
         format: "speedscope",
         file: filename.to_s,
         rate: @rate,
-        silent: nil
+        silent: nil,
       }
 
       rbspy_args = [
         "record",
         *options.map { |k, v| ["--#{k}", v].compact }.flatten,
         "--",
-        *argv
+        *argv,
       ]
 
       loop do
@@ -92,9 +94,9 @@ module Singed
         prompt_password
       end
 
-      rbspy = lambda do
+      rbspy = -> do
         # don't run things with spring, because it forks and rbspy won't see it
-        sudo ["rbspy", *rbspy_args], reason: "Singed needs to run as root, but will drop permissions back to your user.", env: {"DISABLE_SPRING" => "1"}
+        sudo ["rbspy", *rbspy_args], reason: "Singed needs to run as root, but will drop permissions back to your user.", env: { "DISABLE_SPRING" => "1" }
       end
 
       if defined?(Bundler)
@@ -122,7 +124,7 @@ module Singed
       end
       filename.write(JSON.dump(json))
 
-      flamegraph = Singed::Flamegraph.new(filename: filename)
+      flamegraph = Singed::Flamegraph.new(filename:)
       flamegraph.open
     end
 
@@ -153,7 +155,7 @@ module Singed
       sudo_args = [
         "sudo",
         "--preserve-env",
-        *system_args.map(&:to_s)
+        *system_args.map(&:to_s),
       ]
 
       puts "$ #{Shellwords.join(sudo_args)}"

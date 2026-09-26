@@ -49,7 +49,7 @@ module Singed
     return unless enabled?
     return if profiling?
 
-    @current_flamegraph = Flamegraph.new(label: label, ignore_gc: ignore_gc, interval: interval)
+    @current_flamegraph = Flamegraph.new(label:, ignore_gc:, interval:)
     @current_flamegraph.tap(&:start)
   end
 

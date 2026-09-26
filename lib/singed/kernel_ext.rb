@@ -1,6 +1,8 @@
+# frozen_string_literal: true
+
 module Kernel
   def flamegraph(label = nil, open: true, ignore_gc: false, interval: 1000, io: $stdout, &block)
-    fg = Singed::Flamegraph.new(label: label, ignore_gc: ignore_gc, interval: interval)
+    fg = Singed::Flamegraph.new(label:, ignore_gc:, interval:)
     result = fg.record(&block)
     fg.save
 

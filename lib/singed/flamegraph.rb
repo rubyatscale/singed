@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 module Singed
   class Flamegraph
     attr_accessor :profile, :filename
@@ -17,8 +19,8 @@ module Singed
       else
         @ignore_gc = ignore_gc
         @interval = interval
-        @time = Time.now # rubocop:disable Rails/TimeZone
-        @filename = self.class.generate_filename(label: label, time: @time)
+        @time = Time.now
+        @filename = self.class.generate_filename(label:, time: @time)
       end
     end
 
@@ -69,11 +71,11 @@ module Singed
       Singed::Speedscope.open_command(@filename)
     end
 
-    def self.generate_filename(label: nil, time: Time.now) # rubocop:disable Rails/TimeZone
+    def self.generate_filename(label: nil, time: Time.now)
       formatted_time = time.strftime("%Y%m%d%H%M%S-%6N")
       basename_parts = ["speedscope", label, formatted_time].compact
 
-      file = Singed.output_directory.join("#{basename_parts.join("-")}.json")
+      file = Singed.output_directory.join("#{basename_parts.join('-')}.json")
       # convert to relative directory if it's an absolute path and within the current
       pwd = Pathname.pwd
       file = file.relative_path_from(pwd) if file.absolute? && file.to_s.start_with?(pwd.to_s)

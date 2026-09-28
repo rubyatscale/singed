@@ -6,8 +6,11 @@ source "https://rubygems.org"
 gemspec
 
 gem "activejob"
+gem "railties"
 gem "rake", "~> 13.4"
 gem "rspec"
 gem "rubocop-gusto", require: false
 gem "rubyzip"
 gem "sidekiq"
+gem "sorbet", require: false
+gem "tapioca", require: false

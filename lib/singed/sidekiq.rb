@@ -1,3 +1,4 @@
+# typed: false
 # frozen_string_literal: true
 
 module Singed
@@ -33,9 +34,12 @@ module Singed
         job_class = job_payload.fetch("wrapped", job_instance) # ActiveJob
         return job_class if job_class.is_a?(Class)
         return job_class.class if job_class.is_a?(::Sidekiq::Job)
+        # Sidekiq payloads carry the job class as a string, so it can only be resolved at runtime.
+        # rubocop:disable Sorbet/ConstantsFromStrings
         return job_class.constantize if job_class.respond_to?(:constantize)
 
         Object.const_get(job_class.to_s)
+        # rubocop:enable Sorbet/ConstantsFromStrings
       rescue NameError
         nil
       end

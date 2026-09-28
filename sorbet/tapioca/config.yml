@@ -1,0 +1,49 @@
+gem:
+  exclude:
+    # The following are stdlib gems that are bundled with sorbet. We exclude them to avoid
+    #   overwriting the bundled versions with tapioca's untyped shims.
+    - benchmark
+    - bigdecimal
+    - cgi
+    - csv
+    - date
+    - drb
+    - erb
+    - fiddle
+    - json
+    - logger
+    - matrix
+    - msgpack # not stdlib, but bundled with sorbet
+    - mutex_m
+    - net-ftp
+    - net-http
+    - net-imap
+    - net-protocol
+    - net-smtp
+    - nkf
+    - openssl
+    - ostruct
+    - pp
+    - prettyprint
+    - pstore
+    - psych
+    - racc
+    - rdoc
+    - readline
+    - reline
+    - rexml
+    - securerandom
+    - set
+    - stringio
+    - time
+    - timeout
+    - tsort
+    - uri
+    - webrick
+    - zlib
+dsl:
+  # Add your `dsl` command parameters here:
+  #
+  # exclude:
+  # - SomeGeneratorName
+  # workers: 5

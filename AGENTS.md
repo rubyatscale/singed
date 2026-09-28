@@ -18,6 +18,12 @@ bundle exec rspec spec/path/to/spec.rb
 # Lint
 bundle exec rubocop
 bundle exec rubocop -a  # auto-correct
+
+# Type check (Sorbet)
+bundle exec srb tc
+
+# Regenerate gem RBIs after Gemfile.lock changes
+bin/tapioca gems
 ```
 
 ## Architecture

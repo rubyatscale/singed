@@ -257,6 +257,10 @@ DEPENDENCIES
   rake (~> 13.4)
   rspec
   rubocop-gusto
+  rubocop-performance
+  rubocop-rake
+  rubocop-rspec
+  rubocop-sorbet
   rubyzip
   sidekiq
   singed!

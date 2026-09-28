@@ -15,6 +15,7 @@ plugins:
   - rubocop-rspec
   - rubocop-performance
   - rubocop-rake
+  - rubocop-sorbet
 
 AllCops:
   TargetRubyVersion: 3.3

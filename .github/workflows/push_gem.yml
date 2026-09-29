@@ -96,7 +96,8 @@ jobs:
           egress-policy: audit
 
       # `rake release` pushes the current branch along with the tag, so this has to be a
-      # branch checkout rather than a detached HEAD at the tested commit.
+      # branch checkout rather than a detached HEAD at the tested commit. The push needs no
+      # persisted credentials: release-gem puts the token in git's credential cache for it.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: main

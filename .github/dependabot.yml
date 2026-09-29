@@ -8,3 +8,15 @@ updates:
       bundler:
         patterns:
           - "*"
+    cooldown:
+      default-days: 7
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    cooldown:
+      default-days: 7

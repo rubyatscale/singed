@@ -1,7 +1,9 @@
 # Publishes a new version to RubyGems.org with trusted publishing (OIDC) once
 # CI passes on main, if the gemspec's version isn't on RubyGems yet, then creates
 # its GitHub release. Bumping the version in singed.gemspec is the release.
-# Dispatch it by hand to retry a failed run: it skips whatever's already done.
+# Dispatch it from main to retry a failed run: it skips whatever's already done.
+# A dispatch doesn't wait for CI, so only run it when main is green; from any
+# other branch it does nothing.
 #
 # The filename and the rubygems.org environment are what the trusted publisher
 # on RubyGems.org is registered against, so don't rename either.

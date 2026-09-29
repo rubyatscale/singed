@@ -1,14 +1,72 @@
+# Publishes a new version to RubyGems.org with trusted publishing (OIDC) once
+# CI passes on main, if the gemspec's version isn't on RubyGems yet. Bumping the
+# version in singed.gemspec is the release. Dispatch it by hand to retry a
+# failed release; it still skips a version that's already published.
+#
+# The filename and the rubygems.org environment are what the trusted publisher
+# on RubyGems.org is registered against, so don't rename either.
 name: Push Gem
 
 on:
+  # zizmor: ignore[dangerous-triggers] only a push to this repo's main gets past the check job, and the release job checks out main itself
+  workflow_run:
+    workflows: [CI Test]
+    types: [completed]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
   contents: read
 
+concurrency:
+  group: push-gem
+  cancel-in-progress: false
+
 jobs:
-  push:
-    if: github.repository == 'rubyatscale/singed'
+  check:
+    name: Check whether a release is needed
+    # A fork's pull request can come from a branch named main, so require a push to this repo.
+    if: >-
+      github.repository == 'rubyatscale/singed' &&
+      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' ||
+       github.event.workflow_run.conclusion == 'success' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository)
+    runs-on: ubuntu-latest
+    outputs:
+      release: ${{ steps.version.outputs.release }}
+      version: ${{ steps.version.outputs.version }}
+      sha: ${{ steps.version.outputs.sha }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          persist-credentials: false
+      - uses: ruby/setup-ruby@2e007403fc1ec238429ecaa57af6f22f019cc135 # v1.234.0
+        with:
+          ruby-version: ruby
+      - name: Check whether this version is already on RubyGems
+        id: version
+        env:
+          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
+        run: |
+          version=$(ruby -e 'puts Gem::Specification.load("singed.gemspec").version')
+          status=$(curl -sS -o /dev/null -w '%{http_code}' "https://rubygems.org/api/v2/rubygems/singed/versions/$version.json")
+          case "$status" in
+            200) release=false; echo "singed $version is already on RubyGems, so there's nothing to release." ;;
+            404) release=true; echo "singed $version isn't on RubyGems yet; releasing it." ;;
+            *) echo "::error::RubyGems returned HTTP $status for singed $version"; exit 1 ;;
+          esac
+          {
+            echo "release=$release"
+            echo "version=$version"
+            echo "sha=$SHA"
+          } >> "$GITHUB_OUTPUT"
+
+  release:
+    name: Release
+    needs: check
+    if: needs.check.outputs.release == 'true'
     runs-on: ubuntu-latest
 
     environment:
@@ -16,22 +74,54 @@ jobs:
       url: https://rubygems.org/gems/singed
 
     permissions:
-      contents: write
-      id-token: write
+      contents: write # push the version tag and create the GitHub release
+      id-token: write # trusted publishing
 
     steps:
-      # Set up
       - name: Harden Runner
         uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
         with:
           egress-policy: audit
 
+      # `rake release` pushes the current branch along with the tag, so this has to be a
+      # branch checkout rather than a detached HEAD at the tested commit.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Confirm main is still the commit CI tested
+        env:
+          SHA: ${{ needs.check.outputs.sha }}
+        run: |
+          head=$(git rev-parse HEAD)
+          if [ "$head" != "$SHA" ]; then
+            echo "::error::main moved from $SHA to $head after CI passed. The run for $head will release it."
+            exit 1
+          fi
+      # No bundler cache here: a job that publishes the gem shouldn't restore one.
       - name: Set up Ruby
         uses: ruby/setup-ruby@2e007403fc1ec238429ecaa57af6f22f019cc135 # v1.234.0
         with:
-          bundler-cache: true
           ruby-version: ruby
+      - run: bundle install
 
-      # Release
-      - uses: rubygems/release-gem@9e85cb11501bebc2ae661c1500176316d3987059 # v1
+      - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.check.outputs.version }}
+        run: gh release create "v$VERSION" --verify-tag --generate-notes
+
+  notify_on_failure:
+    name: Notify on failure
+    needs: [check, release]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: slackapi/slack-github-action@dcb1066f776dd043e64d0e8ba94ca15cc7e1875d # v4.0.0
+        with:
+          webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
+          webhook-type: incoming-webhook
+          payload: |
+            text: "${{ github.repository }} gem release FAILED\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

@@ -26,11 +26,11 @@ jobs:
         with:
           egress-policy: audit
 
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
       - name: Set up Ruby
-        uses: ruby/setup-ruby@2e007403fc1ec238429ecaa57af6f22f019cc135 # v1.234.0
+        uses: ruby/setup-ruby@e8944e80fb94b20106697132f8c20c665fab29e9 # v1.325.0
         with:
           ruby-version: ruby
       # Not bundler-cache: a release shouldn't restore a cache other workflows can write.
@@ -38,4 +38,4 @@ jobs:
         run: bundle install
 
       # Release
-      - uses: rubygems/release-gem@9e85cb11501bebc2ae661c1500176316d3987059 # v1.1.0
+      - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1

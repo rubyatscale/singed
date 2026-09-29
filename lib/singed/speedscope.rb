@@ -1,3 +1,4 @@
+# typed: strict
 # frozen_string_literal: true
 
 require "rbconfig"
@@ -10,10 +11,12 @@ module Singed
     VERSION = "1.24.0"
 
     class << self
+      #: () -> String
       def bundled_index_html
         File.join(File.expand_path("../..", __dir__), "vendor", "speedscope", "index.html")
       end
 
+      #: (String | Pathname) -> String
       def open_command(profile_path)
         if File.exist?(bundled_index_html)
           "#{os_open_command} file://#{bundled_index_html}#localProfilePath=#{profile_path}"
@@ -22,6 +25,7 @@ module Singed
         end
       end
 
+      #: (String | Pathname) -> bool?
       def open(profile_path)
         profile_path = profile_path.to_s
 
@@ -34,12 +38,14 @@ module Singed
 
       private
 
+      #: (String) -> bool?
       def open_with_npx(profile_path)
         system("npx", "speedscope", profile_path)
       end
 
       # Based on speedscope CLI code (MIT license)
       # See https://github.com/jlfwong/speedscope/blob/3613918de0dd55a263d0d04f85b0c8c2039c7bee/bin/cli.mjs
+      #: (String) -> bool?
       def open_with_bundled_speedscope(profile_path)
         source_buffer = File.binread(profile_path)
         filename = File.basename(profile_path)
@@ -64,6 +70,7 @@ module Singed
         system os_open_command, url_to_open
       end
 
+      #: () -> String
       def os_open_command
         case host_os = RbConfig::CONFIG["host_os"]
         when /mswin|mingw|cygwin/

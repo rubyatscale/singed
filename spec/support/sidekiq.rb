@@ -1,3 +1,4 @@
+# typed: true
 # frozen_string_literal: true
 
 require "singed/sidekiq"
@@ -26,7 +27,7 @@ module SidekiqTestingInlineWithMiddlewares
 
     job = Sidekiq.load_json(Sidekiq.dump_json(job))
     job["jid"] ||= SecureRandom.hex(12)
-    job_class = Object.const_get(job["class"])
+    job_class = Object.const_get(job["class"]) # rubocop:disable Sorbet/ConstantsFromStrings -- the payload names the job class as a string
     job_instance = job_class.new
     queue = (job_instance.sidekiq_options_hash || {}).fetch("queue", "default")
     server = Sidekiq.respond_to?(:default_configuration) ? Sidekiq.default_configuration : Sidekiq

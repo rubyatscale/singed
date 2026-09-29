@@ -18,6 +18,12 @@ bundle exec rspec spec/path/to/spec.rb
 # Lint
 bundle exec rubocop
 bundle exec rubocop -a  # auto-correct
+
+# Type check (Sorbet)
+bundle exec srb tc
+
+# Regenerate gem RBIs after Gemfile.lock changes
+bin/tapioca gems
 ```
 
 ## Architecture
@@ -25,6 +31,13 @@ bundle exec rubocop -a  # auto-correct
 - `lib/singed.rb` — main entry point; provides `Singed.flamegraph` block helper
 - `lib/singed/` — core classes: flamegraph output handling, stackprof/rbspy integrations, speedscope launcher
 - `spec/` — RSpec tests
+
+## Types
+
+- Files under `lib/` are `# typed: strict`. Write their signatures as [RBS comments](https://sorbet.org/docs/rbs-support) (`#: (String) -> bool`), not `sig` blocks.
+- `sorbet-runtime` isn't a dependency of the gem, so nothing under `lib/` may reference `T` at runtime. Use the RBS assertion comments (`#: Type`, `#: as !nil`, `#: as Type`, `#: as untyped`, `#: self as Type`) instead of `T.let`, `T.must`, `T.cast`, `T.unsafe` and `T.bind`.
+- Apps that use Tapioca still run these signatures: Tapioca rewrites RBS comments into runtime-checked `sig`s while it loads the app. A signature must therefore only name constants that are loaded whenever its file is (not `ActiveSupport` in `lib/singed.rb`), and must accept every value an app can pass while booting, such as `flamegraph [:show, :index]` in a controller. Otherwise the app's `tapioca gem` or `tapioca dsl` run errors. The specs here don't load `sorbet-runtime`, so they can't catch this.
+- Types the generated gem RBIs are missing go in `sorbet/rbi/shims/`.
 
 ## Pull requests
 

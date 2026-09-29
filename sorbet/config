@@ -1,0 +1,7 @@
+--dir=.
+--enable-experimental-rbs-comments
+--enable-experimental-requires-ancestor
+--enable-experimental-rspec
+--ignore=tmp/
+--ignore=vendor/
+--parser=prism

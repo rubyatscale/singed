@@ -1,7 +1,9 @@
+# typed: strict
 # frozen_string_literal: true
 
 module Singed
   class Report < StackProf::Report
+    #: () -> void
     def filter!
       # copy and paste from StackProf::Report#print_graphviz that does filtering
       # mark_stack = []
@@ -33,7 +35,9 @@ module Singed
         frame[:file] = Singed.filter_line(frame[:file])
       end
 
-      @data[:frames] = list
+      # frames(true) above has already raised NoMethodError if @data were nil.
+      data = @data #: as !nil
+      data[:frames] = list
     end
   end
 end

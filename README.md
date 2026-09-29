@@ -97,6 +97,16 @@ end
 
 This won't catch the entire request though, just once it's been routed to controller and a response has been served (ie no middleware).
 
+If Sorbet checks the controller (`# typed: true` or stricter), also include `Singed::ControllerExt` in it. The Railtie already includes it into `ActionController::Base` at runtime, but Sorbet can't see that, so it would check `flamegraph :show` against the block form of `flamegraph` instead:
+
+```ruby
+class EmployeesController < ApplicationController
+  include Singed::ControllerExt
+
+  flamegraph :show
+end
+```
+
 ### Rack/Rails requests
 
 To capture the whole request, there is a middleware which checks for the  `X-Singed` header to be 'true'. With curl, you can do this like:

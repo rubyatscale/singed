@@ -6,23 +6,11 @@
 # Note that changes in the inspected code, or installation of new
 # versions of RuboCop, may require this file to be generated again.
 
-# Offense count: 15
+# Offense count: 3
 # This cop supports unsafe autocorrection (--autocorrect-all).
 # Configuration parameters: SuggestedStrictness.
 Sorbet/StrictSigil:
   Exclude:
-    - 'lib/singed.rb'
-    - 'lib/singed/backtrace_cleaner_ext.rb'
-    - 'lib/singed/cli.rb'
-    - 'lib/singed/controller_ext.rb'
-    - 'lib/singed/flamegraph.rb'
-    - 'lib/singed/kernel_ext.rb'
-    - 'lib/singed/rack_middleware.rb'
-    - 'lib/singed/railtie.rb'
-    - 'lib/singed/report.rb'
-    - 'lib/singed/rspec.rb'
-    - 'lib/singed/sidekiq.rb'
-    - 'lib/singed/speedscope.rb'
     - 'sorbet/tapioca/require.rb'
     - 'spec/spec_helper.rb'
     - 'spec/support/sidekiq.rb'

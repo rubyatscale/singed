@@ -1,0 +1,16 @@
+name: GitHub Actions Security Analysis
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: ["**"]
+
+permissions: {}
+
+jobs:
+  zizmor:
+    permissions:
+      contents: read
+      security-events: write
+    uses: rubyatscale/shared-config/.github/workflows/zizmor.yml@main # zizmor: ignore[unpinned-uses] internal reusable workflow tracked at @main by convention so shared-config updates propagate automatically

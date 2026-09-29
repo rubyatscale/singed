@@ -1,5 +1,6 @@
 name: CI Test
-on: [push, pull_request]
+# push_gem.yml dispatches this on release PRs, since pushes made with GITHUB_TOKEN don't trigger it.
+on: [push, pull_request, workflow_dispatch]
 permissions:
   contents: read
 jobs:

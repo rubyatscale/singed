@@ -176,6 +176,6 @@ The `open` command is expected to be available.
 
 ## Releasing
 
-Releases are automated with [release-please](https://github.com/googleapis/release-please). PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/), because the squash-merged title decides the next version and becomes the changelog entry. For example, `feat: ...` bumps the minor version, `fix: ...` bumps the patch version, and `chore: ...` doesn't release anything. A check on each PR enforces the format.
+Releases are automated with [release-please](https://github.com/googleapis/release-please). PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/), because the squash-merged title decides the next version and becomes the changelog entry. For example, `feat: ...` bumps the minor version, `fix: ...` bumps the patch version (as do `perf: ...` and `revert: ...`), and `chore: ...` doesn't release anything. A `!` after the type, or a `BREAKING CHANGE:` footer in the squash message, marks a breaking change, which bumps the minor version until 1.0. A check on each PR flags titles that don't follow the format.
 
 release-please keeps a release PR open that bumps `lib/singed/version.rb` and `CHANGELOG.md`. Merging it tags the release, creates the GitHub release, and publishes the gem to RubyGems.org with trusted publishing.

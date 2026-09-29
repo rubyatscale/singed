@@ -21,7 +21,7 @@ jobs:
         env:
           PR_TITLE: ${{ github.event.pull_request.title }}
         run: |
-          pattern="^(feat|fix|chore|docs|refactor|perf|test|ci|build|revert)(\(.+\))?(!)?: .+"
+          pattern="^(feat|fix|chore|docs|refactor|perf|test|ci|build|revert)(\([^()]+\))?(!)?: .+"
           if ! grep -qE "$pattern" <<<"$PR_TITLE"; then
             echo "::error::PR title does not follow Conventional Commits format."
             echo ""
@@ -31,9 +31,11 @@ jobs:
             echo "  feat: add a Sidekiq middleware option for sampling"
             echo "  fix: stop flamegraph from swallowing exceptions"
             echo "  chore(deps): bump stackprof"
+            echo "  revert: feat: add a Sidekiq middleware option for sampling"
             echo ""
             echo "Allowed types: feat, fix, chore, docs, refactor, perf, test, ci, build, revert"
-            echo "feat bumps the minor version, fix the patch version, and a ! after the type marks a breaking change."
+            echo "feat bumps the minor version; fix, perf and revert bump the patch version; the other types don't release."
+            echo "A ! after the type marks a breaking change, which bumps the minor version until 1.0."
             exit 1
           fi
           echo "PR title is valid: $PR_TITLE"

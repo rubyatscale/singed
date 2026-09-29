@@ -3,6 +3,7 @@
 
 require "json"
 require "stackprof"
+require "singed/version"
 
 module Singed
   # Methods defined with plain `def` below are both module methods (Singed.start) and public

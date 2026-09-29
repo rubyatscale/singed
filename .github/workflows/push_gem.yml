@@ -1,8 +1,8 @@
-# release-please keeps a release PR open that bumps lib/singed/version.rb and
-# CHANGELOG.md from the Conventional Commits merged to main. Merging it creates
-# the tag and GitHub release, and the release job then publishes the gem to
-# RubyGems.org with trusted publishing (OIDC). To retry a failed publish,
-# re-run the failed jobs of that workflow run.
+# release-please keeps a release PR open that bumps lib/singed/version.rb,
+# singed's line in Gemfile.lock, and CHANGELOG.md from the Conventional Commits
+# merged to main. Merging it creates the tag and GitHub release, and the release
+# job then publishes the gem to RubyGems.org with trusted publishing (OIDC). To
+# retry a failed publish, re-run the failed jobs of that workflow run.
 #
 # Publishing happens in this run rather than on `release: published`, because a
 # release created with GITHUB_TOKEN doesn't trigger other workflows. The filename
@@ -27,15 +27,47 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write # create the release tag and GitHub release
+      issues: write # create the autorelease labels, which pull-requests: write doesn't allow
       pull-requests: write # open and update the release PR
     outputs:
       release_created: ${{ steps.release.outputs.release_created }}
+      tag_name: ${{ steps.release.outputs.tag_name }}
+      prs_created: ${{ steps.release.outputs.prs_created }}
+      pr: ${{ steps.release.outputs.pr }}
     steps:
       - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
         id: release
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+
+  # release-please pushes the release PR with GITHUB_TOKEN, which doesn't trigger
+  # workflows, so its required checks would never report. GITHUB_TOKEN can
+  # trigger workflow_dispatch, and the dispatched runs report on the PR's head
+  # commit. Each workflow listed here needs a workflow_dispatch trigger.
+  release-pr-checks:
+    name: Run CI on the release PR
+    needs: release-please
+    if: needs.release-please.outputs.prs_created == 'true'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: write # dispatch the CI workflows
+    steps:
+      - name: Dispatch CI on the release branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          PR: ${{ needs.release-please.outputs.pr }}
+        run: |
+          # release-please reports PR number 0 when it found nothing to change.
+          if [ "$(jq -r .number <<<"$PR")" = "0" ]; then
+            echo "No release PR changes to check."
+            exit 0
+          fi
+          branch=$(jq -r .headBranchName <<<"$PR")
+          for workflow in build.yml rubocop.yml sorbet.yml; do
+            gh workflow run "$workflow" --ref "$branch"
+          done
 
   release:
     name: Publish to RubyGems
@@ -48,43 +80,38 @@ jobs:
       url: https://rubygems.org/gems/singed
 
     permissions:
-      contents: write # `rake release` pushes the branch and the tag release-please created
+      contents: read
       id-token: write # trusted publishing
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@4d991eb9b905ef189e4c376166672c3f2f230481 # v2.11.0
+        uses: step-security/harden-runner@e14015d583714f6e62063499dc959a02595150a1 # v2.21.1
         with:
           egress-policy: audit
 
-      # `rake release` pushes the current branch along with the tag, so this has to be a
-      # branch checkout rather than a detached HEAD at the release commit. The push needs no
-      # persisted credentials: release-gem puts the token in git's credential cache for it.
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      # Build from the release tag, so a re-run publishes the tagged tree even after main has
+      # moved. `rake release` only pushes the branch and tag when the tag is missing locally,
+      # and release-gem fetches tags first, so it never pushes and needs no write access.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          ref: main
+          ref: refs/tags/${{ needs.release-please.outputs.tag_name }}
           persist-credentials: false
-      - name: Confirm main is still the release commit
-        env:
-          SHA: ${{ github.sha }}
-        run: |
-          head=$(git rev-parse HEAD)
-          if [ "$head" != "$SHA" ]; then
-            echo "::error::main moved from the release commit $SHA to $head before publishing, so this run can't publish it."
-            exit 1
-          fi
       # No bundler cache here: a job that publishes the gem shouldn't restore one.
       - name: Set up Ruby
-        uses: ruby/setup-ruby@2e007403fc1ec238429ecaa57af6f22f019cc135 # v1.234.0
+        uses: ruby/setup-ruby@95ef2b042f9d7a56d8268cba8559e2842e2ad01b # v1.321.0
         with:
-          ruby-version: ruby
+          ruby-version: "3.4"
+      # Frozen, so a Gemfile.lock that disagrees with the gemspec fails here with a clear error,
+      # rather than being rewritten and failing `rake release`'s clean-tree check.
       - run: bundle install
+        env:
+          BUNDLE_FROZEN: "true"
 
       - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
 
   notify_on_failure:
     name: Notify on failure
-    needs: [release-please, release]
+    needs: [release-please, release-pr-checks, release]
     if: failure()
     runs-on: ubuntu-latest
     steps:

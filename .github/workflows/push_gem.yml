@@ -39,20 +39,20 @@ jobs:
       version: ${{ steps.version.outputs.version }}
       sha: ${{ steps.version.outputs.sha }}
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
-          persist-credentials: false
-      - uses: ruby/setup-ruby@2e007403fc1ec238429ecaa57af6f22f019cc135 # v1.234.0
-        with:
-          ruby-version: ruby
+      # Reads the gemspec through the API instead of checking it out and evaluating it, so no
+      # code from the triggering commit runs in this privileged context.
       - name: Check whether this version is on RubyGems and has a GitHub release
         id: version
         env:
           GH_TOKEN: ${{ github.token }}
           SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
-          version=$(ruby -e 'puts Gem::Specification.load("singed.gemspec").version')
+          gemspec=$(gh api "repos/$GITHUB_REPOSITORY/contents/singed.gemspec?ref=$SHA" -H 'Accept: application/vnd.github.raw')
+          version=$(sed -n 's/^[[:space:]]*spec\.version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' <<<"$gemspec" | head -1)
+          if ! [[ "$version" =~ ^[0-9]+(\.[0-9A-Za-z]+)*$ ]]; then
+            echo "::error::Couldn't read a version from the spec.version line in singed.gemspec at $SHA"
+            exit 1
+          fi
           status=$(curl -sS -o /dev/null -w '%{http_code}' "https://rubygems.org/api/v2/rubygems/singed/versions/$version.json")
           case "$status" in
             200) release=false; echo "singed $version is already on RubyGems." ;;

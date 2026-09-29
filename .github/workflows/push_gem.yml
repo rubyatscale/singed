@@ -137,7 +137,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.check.outputs.version }}
-        run: gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
+        # RubyGems treats any version with a letter in it as a prerelease.
+        run: |
+          prerelease=()
+          if [[ "$VERSION" == *[A-Za-z]* ]]; then prerelease=(--prerelease); fi
+          gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes "${prerelease[@]}"
 
   notify_on_failure:
     name: Notify on failure

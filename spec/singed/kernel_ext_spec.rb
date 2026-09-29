@@ -22,15 +22,15 @@ describe Kernel do
     Object.new.flamegraph(io:) do
     end
 
-    expect(Singed::Flamegraph).to have_received(:new).with(label: nil, ignore_gc: false, interval: 1000)
+    expect(Singed::Flamegraph).to have_received(:new).with(label: nil, ignore_gc: false, interval: 1000, profiler: nil)
   end
 
   it "works with explicit arguments" do
     # NOTE: use Object.new to get the actual flamegraph kernel extension, instead of the rspec-specific flamegraph
-    Object.new.flamegraph("yellowjackets", ignore_gc: true, interval: 2000, io:) do
+    Object.new.flamegraph("yellowjackets", ignore_gc: true, interval: 2000, profiler: :vernier, io:) do
     end
 
-    expect(Singed::Flamegraph).to have_received(:new).with(label: "yellowjackets", ignore_gc: true, interval: 2000)
+    expect(Singed::Flamegraph).to have_received(:new).with(label: "yellowjackets", ignore_gc: true, interval: 2000, profiler: :vernier)
   end
 
   context "with default options" do

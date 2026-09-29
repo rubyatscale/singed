@@ -33,6 +33,18 @@ module Singed
     @enabled = true
   end
 
+  # Which profiler records flamegraphs that aren't given one: :stackprof or :vernier.
+  #: (Symbol) -> void
+  def profiler=(profiler)
+    Flamegraph.load_profiler(profiler)
+    @profiler = profiler #: Symbol?
+  end
+
+  #: () -> Symbol
+  def profiler
+    @profiler || :stackprof
+  end
+
   # Not ActiveSupport::BacktraceCleaner: apps' Tapioca evaluates these sigs even when ActiveSupport isn't loaded.
   #: (untyped) -> void
   def backtrace_cleaner=(backtrace_cleaner)
@@ -60,12 +72,12 @@ module Singed
     line
   end
 
-  #: (?String?, ?ignore_gc: bool, ?interval: Integer) -> Flamegraph?
-  def start(label = nil, ignore_gc: false, interval: 1000)
+  #: (?String?, ?ignore_gc: bool, ?interval: Integer, ?profiler: Symbol?) -> Flamegraph?
+  def start(label = nil, ignore_gc: false, interval: 1000, profiler: nil)
     return unless enabled?
     return if profiling?
 
-    @current_flamegraph = Flamegraph.new(label:, ignore_gc:, interval:)
+    @current_flamegraph = Flamegraph.new(label:, ignore_gc:, interval:, profiler:)
     @current_flamegraph.tap(&:start)
   end
 
@@ -90,6 +102,7 @@ module Singed
   autoload :Report, "singed/report"
   autoload :RackMiddleware, "singed/rack_middleware"
   autoload :Speedscope, "singed/speedscope"
+  autoload :VernierReport, "singed/vernier_report"
 end
 
 require "singed/kernel_ext"

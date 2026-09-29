@@ -1,9 +1,11 @@
 # frozen_string_literal: true
 
+require_relative "lib/singed/version"
+
 Gem::Specification.new do |spec|
   spec.name = "singed"
 
-  spec.version = "0.3.0"
+  spec.version = Singed::VERSION
   spec.license = "MIT"
   spec.authors = ["Josh Nichols"]
   spec.email = ["josh.nichols@gusto.com"]

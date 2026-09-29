@@ -1,84 +1,46 @@
-# Publishes a new version to RubyGems.org with trusted publishing (OIDC) once
-# CI passes on main, if the gemspec's version isn't on RubyGems yet, then creates
-# its GitHub release. Bumping the version in singed.gemspec is the release.
-# Dispatch it by hand to retry a failed run: it skips whatever's already done.
+# release-please keeps a release PR open that bumps lib/singed/version.rb and
+# CHANGELOG.md from the Conventional Commits merged to main. Merging it creates
+# the tag and GitHub release, and the release job then publishes the gem to
+# RubyGems.org with trusted publishing (OIDC). To retry a failed publish,
+# re-run the failed jobs of that workflow run.
 #
-# The filename and the rubygems.org environment are what the trusted publisher
-# on RubyGems.org is registered against, so don't rename either.
+# Publishing happens in this run rather than on `release: published`, because a
+# release created with GITHUB_TOKEN doesn't trigger other workflows. The filename
+# and the rubygems.org environment are what the trusted publisher on
+# RubyGems.org is registered against, so don't rename either.
 name: Push Gem
 
 on:
-  # zizmor: ignore[dangerous-triggers] only a push to this repo's main gets past the check job, and the release job checks out main itself
-  workflow_run:
-    workflows: [CI Test]
-    types: [completed]
+  push:
     branches: [main]
-  workflow_dispatch:
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
   group: push-gem
   cancel-in-progress: false
 
 jobs:
-  check:
-    name: Check whether a release is needed
-    # A fork's pull request can come from a branch named main, so require a push to this repo.
-    if: >-
-      github.repository == 'rubyatscale/singed' &&
-      (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' ||
-       github.event.workflow_run.conclusion == 'success' &&
-       github.event.workflow_run.event == 'push' &&
-       github.event.workflow_run.head_repository.full_name == github.repository)
+  release-please:
+    name: Update the release PR or create a release
+    if: github.repository == 'rubyatscale/singed'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the release tag and GitHub release
+      pull-requests: write # open and update the release PR
     outputs:
-      release: ${{ steps.version.outputs.release }}
-      github_release: ${{ steps.version.outputs.github_release }}
-      version: ${{ steps.version.outputs.version }}
-      sha: ${{ steps.version.outputs.sha }}
+      release_created: ${{ steps.release.outputs.release_created }}
     steps:
-      # Reads the gemspec through the API instead of checking it out and evaluating it, so no
-      # code from the triggering commit runs in this privileged context.
-      - name: Check whether this version is on RubyGems and has a GitHub release
-        id: version
-        env:
-          GH_TOKEN: ${{ github.token }}
-          SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
-        run: |
-          gemspec=$(gh api "repos/$GITHUB_REPOSITORY/contents/singed.gemspec?ref=$SHA" -H 'Accept: application/vnd.github.raw')
-          version=$(sed -n 's/^[[:space:]]*spec\.version[[:space:]]*=[[:space:]]*"\([^"]*\)".*/\1/p' <<<"$gemspec" | head -1)
-          if ! [[ "$version" =~ ^[0-9]+(\.[0-9A-Za-z]+)*$ ]]; then
-            echo "::error::Couldn't read a version from the spec.version line in singed.gemspec at $SHA"
-            exit 1
-          fi
-          status=$(curl -sS -o /dev/null -w '%{http_code}' "https://rubygems.org/api/v2/rubygems/singed/versions/$version.json")
-          case "$status" in
-            200) release=false; echo "singed $version is already on RubyGems." ;;
-            404) release=true; echo "singed $version isn't on RubyGems yet; releasing it." ;;
-            *) echo "::error::RubyGems returned HTTP $status for singed $version"; exit 1 ;;
-          esac
-          if lookup=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/v$version" 2>&1); then
-            github_release=false
-          elif grep -q 'HTTP 404' <<<"$lookup"; then
-            github_release=true
-            echo "v$version has no GitHub release yet."
-          else
-            echo "::error::Couldn't check for a v$version GitHub release: $lookup"
-            exit 1
-          fi
-          {
-            echo "release=$release"
-            echo "github_release=$github_release"
-            echo "version=$version"
-            echo "sha=$SHA"
-          } >> "$GITHUB_OUTPUT"
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        id: release
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
 
   release:
-    name: Release
-    needs: check
-    if: needs.check.outputs.release == 'true'
+    name: Publish to RubyGems
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
 
     environment:
@@ -86,7 +48,7 @@ jobs:
       url: https://rubygems.org/gems/singed
 
     permissions:
-      contents: write # push the version tag
+      contents: write # `rake release` pushes the branch and the tag release-please created
       id-token: write # trusted publishing
 
     steps:
@@ -96,19 +58,19 @@ jobs:
           egress-policy: audit
 
       # `rake release` pushes the current branch along with the tag, so this has to be a
-      # branch checkout rather than a detached HEAD at the tested commit. The push needs no
+      # branch checkout rather than a detached HEAD at the release commit. The push needs no
       # persisted credentials: release-gem puts the token in git's credential cache for it.
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: main
           persist-credentials: false
-      - name: Confirm main is still the commit CI tested
+      - name: Confirm main is still the release commit
         env:
-          SHA: ${{ needs.check.outputs.sha }}
+          SHA: ${{ github.sha }}
         run: |
           head=$(git rev-parse HEAD)
           if [ "$head" != "$SHA" ]; then
-            echo "::error::main moved from $SHA to $head after CI passed. The run for $head will release it."
+            echo "::error::main moved from the release commit $SHA to $head before publishing, so this run can't publish it."
             exit 1
           fi
       # No bundler cache here: a job that publishes the gem shouldn't restore one.
@@ -120,26 +82,9 @@ jobs:
 
       - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
 
-  # Its own job, so a retry can still create the release after the gem has shipped.
-  github_release:
-    name: Create GitHub release
-    needs: [check, release]
-    if: >-
-      always() && needs.check.result == 'success' && needs.check.outputs.github_release == 'true' &&
-      (needs.release.result == 'success' || needs.release.result == 'skipped')
-    runs-on: ubuntu-latest
-    permissions:
-      contents: write # create the GitHub release
-    steps:
-      - name: Create GitHub release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          VERSION: ${{ needs.check.outputs.version }}
-        run: gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
-
   notify_on_failure:
     name: Notify on failure
-    needs: [check, release, github_release]
+    needs: [release-please, release]
     if: failure()
     runs-on: ubuntu-latest
     steps:

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "packages": {
+    ".": {
+      "release-type": "ruby",
+      "package-name": "singed",
+      "include-component-in-tag": false,
+      "changelog-path": "CHANGELOG.md",
+      "version-file": "lib/singed/version.rb",
+      "bump-minor-pre-major": true
+    }
+  }
+}

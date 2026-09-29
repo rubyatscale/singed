@@ -163,3 +163,9 @@ The `open` command is expected to be available.
 
 - using [rbspy](https://rbspy.github.io/) directly
 - using [stackprof](https://github.com/tmm1/stackprof) (a dependency of singed) directly
+
+## Releasing
+
+Releases are automated with [release-please](https://github.com/googleapis/release-please). PR titles must follow [Conventional Commits](https://www.conventionalcommits.org/), because the squash-merged title decides the next version and becomes the changelog entry. For example, `feat: ...` bumps the minor version, `fix: ...` bumps the patch version, and `chore: ...` doesn't release anything. A check on each PR enforces the format.
+
+release-please keeps a release PR open that bumps `lib/singed/version.rb` and `CHANGELOG.md`. Merging it tags the release, creates the GitHub release, and publishes the gem to RubyGems.org with trusted publishing.

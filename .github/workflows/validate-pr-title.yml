@@ -1,0 +1,39 @@
+# release-please derives the next version and the changelog from squash-merged
+# commit titles, which GitHub takes from the PR title.
+name: Validate PR Title
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+permissions: {}
+
+concurrency:
+  group: validate-pr-title-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate PR Title
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check Conventional Commits format
+        env:
+          PR_TITLE: ${{ github.event.pull_request.title }}
+        run: |
+          pattern="^(feat|fix|chore|docs|refactor|perf|test|ci|build|revert)(\(.+\))?(!)?: .+"
+          if ! grep -qE "$pattern" <<<"$PR_TITLE"; then
+            echo "::error::PR title does not follow Conventional Commits format."
+            echo ""
+            echo "Expected: <type>(<optional scope>): <description>"
+            echo ""
+            echo "Examples:"
+            echo "  feat: add a Sidekiq middleware option for sampling"
+            echo "  fix: stop flamegraph from swallowing exceptions"
+            echo "  chore(deps): bump stackprof"
+            echo ""
+            echo "Allowed types: feat, fix, chore, docs, refactor, perf, test, ci, build, revert"
+            echo "feat bumps the minor version, fix the patch version, and a ! after the type marks a breaking change."
+            exit 1
+          fi
+          echo "PR title is valid: $PR_TITLE"

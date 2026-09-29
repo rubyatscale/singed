@@ -25,3 +25,7 @@ bundle exec rubocop -a  # auto-correct
 - `lib/singed.rb` — main entry point; provides `Singed.flamegraph` block helper
 - `lib/singed/` — core classes: flamegraph output handling, stackprof/rbspy integrations, speedscope launcher
 - `spec/` — RSpec tests
+
+## Pull requests
+
+PR titles must follow Conventional Commits (`feat: ...`, `fix: ...`, `chore: ...`, with `!` for a breaking change). release-please uses the squash-merged title to pick the next version and write the changelog entry. Don't edit `lib/singed/version.rb` or `CHANGELOG.md` by hand; the release PR does that.

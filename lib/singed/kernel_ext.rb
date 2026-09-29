@@ -7,10 +7,11 @@ module Kernel
   #|   ?open: bool,
   #|   ?ignore_gc: bool,
   #|   ?interval: Integer,
+  #|   ?profiler: Symbol?,
   #|   ?io: IO | StringIO
   #| ) { () -> Result } -> Result
-  def flamegraph(label = nil, open: true, ignore_gc: false, interval: 1000, io: $stdout, &block)
-    fg = Singed::Flamegraph.new(label:, ignore_gc:, interval:)
+  def flamegraph(label = nil, open: true, ignore_gc: false, interval: 1000, profiler: nil, io: $stdout, &block) # rubocop:disable Metrics/ParameterLists -- all optional keywords
+    fg = Singed::Flamegraph.new(label:, ignore_gc:, interval:, profiler:)
     result = fg.record(&block)
     fg.save
 

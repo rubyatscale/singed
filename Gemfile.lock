@@ -243,6 +243,7 @@ GEM
     unicode-emoji (4.3.0)
     uri (1.1.1)
     useragent (0.16.11)
+    vernier (1.11.0)
     zeitwerk (2.8.3)
 
 PLATFORMS
@@ -266,6 +267,7 @@ DEPENDENCIES
   singed!
   sorbet
   tapioca
+  vernier
 
 BUNDLED WITH
   4.0.15

@@ -24,7 +24,7 @@ RSpec.describe Singed::ControllerExt do
   end
 
   it "wraps the target action in a flamegraph" do
-    controller_class.flamegraph(:show, ignore_gc: true, interval: 500)
+    controller_class.flamegraph(:show, ignore_gc: true, interval: 500, profiler: :vernier)
 
     expect(controller_class.around_actions.size).to eq(1)
     options, callback = controller_class.around_actions.first
@@ -36,7 +36,7 @@ RSpec.describe Singed::ControllerExt do
 
     callback.call(controller, -> { action_ran = true })
 
-    expect(controller).to have_received(:flamegraph).with(ignore_gc: true, interval: 500)
+    expect(controller).to have_received(:flamegraph).with(ignore_gc: true, interval: 500, profiler: :vernier)
     expect(action_ran).to be(true)
   end
 end

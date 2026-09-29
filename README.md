@@ -1,6 +1,6 @@
 # Singed
 
-Singed makes it easy to get a flamegraph anywhere in your code base. It wraps profiling your code with [stackprof](https://github.com/tmm1/stackprof) or [rbspy](https://github.com/rbspy/rbspy), and then launching [speedscope](https://github.com/jlfwong/speedscope) to view it.
+Singed makes it easy to get a flamegraph anywhere in your code base. It wraps profiling your code with [stackprof](https://github.com/tmm1/stackprof), [vernier](https://github.com/jhawthorn/vernier) or [rbspy](https://github.com/rbspy/rbspy), and then launching [speedscope](https://github.com/jlfwong/speedscope) to view it.
 
 ## Installation
 
@@ -65,6 +65,40 @@ flamegraph.open
 ```
 
 Note that `Singed.start` can't be run multiple times in parallel, instantiate multiple `Singed::Flamegraph` objects instead and call `start` on them.
+
+### Vernier
+
+Singed profiles with stackprof by default. [Vernier](https://github.com/jhawthorn/vernier) profiles each thread separately instead, so a flamegraph from a multi-threaded app like Puma or Sidekiq isn't a mix of what all its threads were doing. Singed doesn't depend on vernier, so add it (1.5 or newer) to your Gemfile:
+
+```ruby
+gem "vernier"
+```
+
+Then ask for it when capturing a flamegraph. `Singed.start` and controllers' `flamegraph` take `profiler:` too:
+
+```ruby
+flamegraph(profiler: :vernier) {
+  # your code here
+}
+```
+
+Or make it the default, which the RSpec, controller, Rack and Sidekiq integrations below then use as well:
+
+```ruby
+Singed.profiler = :vernier
+```
+
+That loads vernier straight away, so a missing or outdated gem fails at boot. If vernier is only in some of your Gemfile's groups, set this only in the environments that load them, e.g. in `config/environments/development.rb`.
+
+speedscope then gets a profile per thread, and opens on the thread that ran your code. Pick another thread from its title bar, or step through them with `n` and `p`. Vernier keeps sampling threads that are waiting, so their stacks end in `(idle)` while sleeping or waiting on I/O or a lock, and in `(waiting for GVL)` while another thread holds the GVL.
+
+Vernier doesn't sample a thread while it's running garbage collection, so `ignore_gc` makes no difference with it. The `singed` command line always uses rbspy.
+
+The flamegraph's `profile` is Vernier's own result, which you can also save for [vernier.prof](https://vernier.prof) to show GVL and GC activity alongside the flamegraph:
+
+```ruby
+Singed.stop.profile.write(out: "tmp/profile.vernier.json.gz")
+```
 
 ### RSpec
 
@@ -173,3 +207,4 @@ The `open` command is expected to be available.
 
 - using [rbspy](https://rbspy.github.io/) directly
 - using [stackprof](https://github.com/tmm1/stackprof) (a dependency of singed) directly
+- using [vernier](https://github.com/jhawthorn/vernier) directly

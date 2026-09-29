@@ -18,3 +18,4 @@ gem "rubyzip"
 gem "sidekiq"
 gem "sorbet", require: false
 gem "tapioca", require: false
+gem "vernier"

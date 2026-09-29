@@ -53,7 +53,7 @@ jobs:
             echo "::error::Couldn't read a version from the spec.version line in singed.gemspec at $SHA"
             exit 1
           fi
-          status=$(curl -sS -o /dev/null -w '%{http_code}' "https://rubygems.org/api/v2/rubygems/singed/versions/$version.json")
+          status=$(curl -sS --retry 3 -o /dev/null -w '%{http_code}' "https://rubygems.org/api/v2/rubygems/singed/versions/$version.json")
           case "$status" in
             200) release=false; echo "singed $version is already on RubyGems." ;;
             404) release=true; echo "singed $version isn't on RubyGems yet; releasing it." ;;

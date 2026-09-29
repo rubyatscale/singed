@@ -5,8 +5,8 @@ Gem::Specification.new do |spec|
 
   spec.version = "0.4.0"
   spec.license = "MIT"
-  spec.authors = ["Josh Nichols"]
-  spec.email = ["josh.nichols@gusto.com"]
+  spec.authors = ['Gusto Engineers']
+  spec.email = ['dev@gusto.com']
   spec.summary = "Quick and easy way to get flamegraphs from a specific part of your code base"
   spec.required_ruby_version = ">= 3.3"
   spec.homepage = "https://github.com/rubyatscale/singed"

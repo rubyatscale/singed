@@ -1,7 +1,7 @@
 # Publishes a new version to RubyGems.org with trusted publishing (OIDC) once
-# CI passes on main, if the gemspec's version isn't on RubyGems yet. Bumping the
-# version in singed.gemspec is the release. Dispatch it by hand to retry a
-# failed release; it still skips a version that's already published.
+# CI passes on main, if the gemspec's version isn't on RubyGems yet, then creates
+# its GitHub release. Bumping the version in singed.gemspec is the release.
+# Dispatch it by hand to retry a failed run: it skips whatever's already done.
 #
 # The filename and the rubygems.org environment are what the trusted publisher
 # on RubyGems.org is registered against, so don't rename either.
@@ -35,6 +35,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       release: ${{ steps.version.outputs.release }}
+      github_release: ${{ steps.version.outputs.github_release }}
       version: ${{ steps.version.outputs.version }}
       sha: ${{ steps.version.outputs.sha }}
     steps:
@@ -45,20 +46,31 @@ jobs:
       - uses: ruby/setup-ruby@2e007403fc1ec238429ecaa57af6f22f019cc135 # v1.234.0
         with:
           ruby-version: ruby
-      - name: Check whether this version is already on RubyGems
+      - name: Check whether this version is on RubyGems and has a GitHub release
         id: version
         env:
+          GH_TOKEN: ${{ github.token }}
           SHA: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
           version=$(ruby -e 'puts Gem::Specification.load("singed.gemspec").version')
           status=$(curl -sS -o /dev/null -w '%{http_code}' "https://rubygems.org/api/v2/rubygems/singed/versions/$version.json")
           case "$status" in
-            200) release=false; echo "singed $version is already on RubyGems, so there's nothing to release." ;;
+            200) release=false; echo "singed $version is already on RubyGems." ;;
             404) release=true; echo "singed $version isn't on RubyGems yet; releasing it." ;;
             *) echo "::error::RubyGems returned HTTP $status for singed $version"; exit 1 ;;
           esac
+          if lookup=$(gh api "repos/$GITHUB_REPOSITORY/releases/tags/v$version" 2>&1); then
+            github_release=false
+          elif grep -q 'HTTP 404' <<<"$lookup"; then
+            github_release=true
+            echo "v$version has no GitHub release yet."
+          else
+            echo "::error::Couldn't check for a v$version GitHub release: $lookup"
+            exit 1
+          fi
           {
             echo "release=$release"
+            echo "github_release=$github_release"
             echo "version=$version"
             echo "sha=$SHA"
           } >> "$GITHUB_OUTPUT"
@@ -74,7 +86,7 @@ jobs:
       url: https://rubygems.org/gems/singed
 
     permissions:
-      contents: write # push the version tag and create the GitHub release
+      contents: write # push the version tag
       id-token: write # trusted publishing
 
     steps:
@@ -107,15 +119,26 @@ jobs:
 
       - uses: rubygems/release-gem@7f9650160c1a4e7989fdc9855807bdbd421d8b6b # v1.4.1
 
+  # Its own job, so a retry can still create the release after the gem has shipped.
+  github_release:
+    name: Create GitHub release
+    needs: [check, release]
+    if: >-
+      always() && needs.check.result == 'success' && needs.check.outputs.github_release == 'true' &&
+      (needs.release.result == 'success' || needs.release.result == 'skipped')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+    steps:
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ github.token }}
           VERSION: ${{ needs.check.outputs.version }}
-        run: gh release create "v$VERSION" --verify-tag --generate-notes
+        run: gh release create "v$VERSION" --repo "$GITHUB_REPOSITORY" --verify-tag --generate-notes
 
   notify_on_failure:
     name: Notify on failure
-    needs: [check, release]
+    needs: [check, release, github_release]
     if: failure()
     runs-on: ubuntu-latest
     steps:
@@ -124,4 +147,4 @@ jobs:
           webhook: ${{ secrets.SLACK_WEBHOOK_URL }}
           webhook-type: incoming-webhook
           payload: |
-            text: "${{ github.repository }} gem release FAILED\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            text: "${{ github.repository }} Push Gem workflow FAILED\n${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"

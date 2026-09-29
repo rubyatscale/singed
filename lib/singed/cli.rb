@@ -87,12 +87,13 @@ module Singed
       )
       @filename = Singed::Flamegraph.generate_filename(label: "cli")
 
+      # nil values are for flags. rbspy uses its default rate unless one was given.
       options = {
         format: "speedscope",
         file: filename.to_s,
-        rate: @rate,
         silent: nil,
       }
+      options[:rate] = @rate if @rate
 
       rbspy_args = [
         "record",

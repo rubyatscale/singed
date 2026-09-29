@@ -11,6 +11,7 @@ RSpec.describe Singed::CLI do
   let(:interrupts) { dir.join("interrupts.log") } # a line for each SIGINT rbspy gets
   let(:opened) { dir.join("opened.log") }
   let(:output) { dir.join("output.log") }
+  let(:rbspy_args) { dir.join("rbspy_args.json") }
   let(:rbspy_exit_status) { nil } # for rbspy to fail with, straight away
   let(:started) { dir.join("started") } # the profiled command's pid, once it runs
 
@@ -54,6 +55,7 @@ RSpec.describe Singed::CLI do
       #!#{RbConfig.ruby}
       #{"exit #{rbspy_exit_status}" if rbspy_exit_status}
       require "json"
+      File.write(#{rbspy_args.to_s.inspect}, JSON.generate(ARGV))
       file = ARGV[ARGV.index("--file") + 1]
       command = Process.spawn(*ARGV.drop(ARGV.index("--") + 1))
       trap("INT") do
@@ -99,6 +101,7 @@ RSpec.describe Singed::CLI do
 
     expect(exit_status).to be_success, output.read
     expect(interrupts.read).to eq("INT\n")
+    expect(JSON.parse(rbspy_args.read)).to start_with("record", "--format", "speedscope", "--file", a_string_ending_with(".json"), "--silent", "--")
     expect { Process.kill(0, command) }.to raise_error(Errno::ESRCH)
     expect(dir.glob("speedscope-cli-*.json")).not_to be_empty
     expect(opened.read).not_to be_empty

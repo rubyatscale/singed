@@ -163,7 +163,7 @@ module Singed
       @show_help
     end
 
-    # Never nil or false: exception: true makes Kernel#system raise instead.
+    # Never nil or false: a command that fails raises instead.
     #: (Array[String | Integer | Pathname | nil], reason: String, ?env: Hash[String, String]) -> bool
     def sudo(system_args, reason:, env: {})
       loop do
@@ -183,7 +183,35 @@ module Singed
 
       # Sorbet can't check a splat of an array of unknown length: https://srb.help/7019
       #: self as untyped
-      system(env, *sudo_args, exception: true)
+      pid = spawn(env, *sudo_args)
+      status = wait_passing_on_signals(pid)
+      raise "#{Shellwords.join(sudo_args)} failed (#{status})" unless status.success?
+
+      true
+    end
+
+    # Kernel#system would leave the command running when singed is killed. Instead, the first SIGTERM is
+    # passed on as SIGINT, which sudo relays and is the only signal rbspy stops cleanly on, killing the
+    # command and writing the flamegraph. Nothing more is passed on, because rbspy exits without writing
+    # anything when interrupted twice, and Ctrl-C at a terminal already reaches it directly.
+    # https://github.com/rbspy/rbspy/blob/v0.53.0/src/main.rs#L164-L211
+    #: (Integer) -> Process::Status
+    def wait_passing_on_signals(pid)
+      interrupted = false #: bool
+      previous_int = trap("INT", "IGNORE")
+      previous_term = trap("TERM") do
+        Process.kill("INT", pid) unless interrupted
+        interrupted = true
+      rescue Errno::ESRCH
+        # It has already exited.
+      end
+
+      # Process.wait2 only returns nil when told not to block.
+      waited = Process.wait2(pid) #: as !nil
+      waited.last
+    ensure
+      trap("INT", previous_int)
+      trap("TERM", previous_term)
     end
 
     #: () -> String?

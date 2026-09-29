@@ -196,6 +196,8 @@ $ bundle exec singed -- bin/rails runner 'Model.all.to_a'
 
 The flamegraph is opened afterwards.
 
+To profile a command that runs until it's stopped, like a server, stop it with Ctrl-C. Or, when `singed` runs in the background, such as from a script, stop it with `kill`'s default SIGTERM. Either way, rbspy stops the command and writes the flamegraph, which `singed` then opens.
+
 
 ## Limitations
 

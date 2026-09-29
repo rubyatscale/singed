@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    singed (0.3.0)
+    singed (0.4.0)
       stackprof (>= 0.2.13)
 
 GEM

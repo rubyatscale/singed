@@ -108,7 +108,7 @@ jobs:
         run: |
           head=$(git rev-parse HEAD)
           if [ "$head" != "$SHA" ]; then
-            echo "::error::main moved from $SHA to $head after CI passed. The run for $head will release it."
+            echo "::error::main moved from $SHA to $head after CI passed. If CI passes on $head, its run will release this version; otherwise dispatch this workflow once main is green."
             exit 1
           fi
       # No bundler cache here: a job that publishes the gem shouldn't restore one.

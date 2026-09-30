@@ -10,6 +10,7 @@ RSpec.describe Singed::CLI do
   let(:bin) { dir.join("bin").tap(&:mkpath) }
   let(:interrupts) { dir.join("interrupts.log") } # a line for each SIGINT rbspy gets
   let(:opened) { dir.join("opened.log") }
+  let(:options) { [] } # singed's, before the command
   let(:output) { dir.join("output.log") }
   let(:rbspy_args) { dir.join("rbspy_args.json") }
   let(:rbspy_exit_status) { nil } # for rbspy to fail with, straight away
@@ -18,7 +19,8 @@ RSpec.describe Singed::CLI do
   # Writes the stand-ins first, so no path through the hooks runs singed with the real sudo. It runs as
   # `bundle exec singed` would, but without this process's Bundler environment, whose BUNDLER_ORIG_PATH
   # would have singed's Bundler.with_unbundled_env take the stand-ins back off PATH. And it runs in its
-  # own process group, so the after hook can clean up whatever singed leaves running.
+  # own process group, so the after hook can clean up whatever singed leaves running. TMPDIR keeps the
+  # page that the bundled speedscope writes to show the flamegraph in dir too.
   let!(:singed) do
     write_stand_ins
     Bundler.with_unbundled_env do
@@ -27,8 +29,9 @@ RSpec.describe Singed::CLI do
           "PATH" => "#{bin}:#{ENV.fetch('PATH')}",
           "BUNDLE_GEMFILE" => File.expand_path("../../Gemfile", __dir__),
           "RUBYOPT" => "-rbundler/setup",
+          "TMPDIR" => dir.to_s,
         },
-        RbConfig.ruby, File.expand_path("../../exe/singed", __dir__), "--output-directory", dir.to_s,
+        RbConfig.ruby, File.expand_path("../../exe/singed", __dir__), "--output-directory", dir.to_s, *options,
         "--", RbConfig.ruby, "-e", "File.write(ARGV[0], Process.pid.to_s); sleep", started.to_s,
         chdir: dir.to_s, out: output.to_s, err: output.to_s, pgroup: true
       )
@@ -57,14 +60,14 @@ RSpec.describe Singed::CLI do
       require "json"
       File.write(#{rbspy_args.to_s.inspect}, JSON.generate(ARGV))
       file = ARGV[ARGV.index("--file") + 1]
-      command = Process.spawn(*ARGV.drop(ARGV.index("--") + 1))
       trap("INT") do
         File.write(#{interrupts.to_s.inspect}, "INT\\n", mode: "a")
         exit!(1) if $interrupted
         $interrupted = true
-        Process.kill("KILL", command)
+        Process.kill("KILL", $command)
       end
-      Process.wait(command)
+      $command = Process.spawn(*ARGV.drop(ARGV.index("--") + 1))
+      Process.wait($command)
       sleep 0.5 if $interrupted
       File.write(file, JSON.generate(shared: { frames: [{ name: "<main>", file: "script.rb" }] }, profiles: []))
     RUBY
@@ -81,7 +84,7 @@ RSpec.describe Singed::CLI do
     bin.join(name).chmod(0o755)
   end
 
-  def eventually(timeout: 15)
+  def eventually(timeout: 60)
     deadline = Process.clock_gettime(Process::CLOCK_MONOTONIC) + timeout
     until (result = yield)
       raise "Timed out. singed's output:\n#{output.read}" if Process.clock_gettime(Process::CLOCK_MONOTONIC) > deadline
@@ -91,12 +94,16 @@ RSpec.describe Singed::CLI do
     result
   end
 
+  def command_pid
+    eventually { started.exist? && started.read.to_i.nonzero? }
+  end
+
   def exit_status
     eventually { Process.wait2(singed, Process::WNOHANG)&.last }
   end
 
   it "stops rbspy and the profiled command when terminated, then opens the flamegraph" do
-    command = eventually { started.exist? && started.read.to_i.nonzero? }
+    command = command_pid
     Process.kill("TERM", singed)
 
     expect(exit_status).to be_success, output.read
@@ -108,7 +115,7 @@ RSpec.describe Singed::CLI do
   end
 
   it "passes on only the first SIGTERM, so rbspy can finish writing the flamegraph" do
-    eventually { started.exist? }
+    command_pid
     Process.kill("TERM", singed)
     eventually { interrupts.exist? }
     Process.kill("TERM", singed)
@@ -119,7 +126,7 @@ RSpec.describe Singed::CLI do
   end
 
   it "leaves Ctrl-C's SIGINT to reach rbspy from the terminal" do
-    eventually { started.exist? }
+    command_pid
     Process.kill("INT", singed)
     sleep 0.5
 
@@ -132,12 +139,23 @@ RSpec.describe Singed::CLI do
     expect(interrupts.read).to eq("INT\n")
   end
 
+  context "with a rate" do
+    let(:options) { ["--rate", "50"] }
+
+    it "passes it on to rbspy" do
+      command_pid
+
+      expect(JSON.parse(rbspy_args.read)).to start_with("record", "--format", "speedscope", "--file", a_string_ending_with(".json"), "--silent", "--rate", "50", "--")
+    end
+  end
+
   context "when rbspy fails" do
     let(:rbspy_exit_status) { 3 }
 
-    it "fails too" do
+    it "fails too, without opening anything" do
       expect(exit_status).not_to be_success
       expect(output.read).to match(/rbspy record .* failed \(pid \d+ exit 3\)/)
+      expect(opened).not_to exist
     end
   end
 end

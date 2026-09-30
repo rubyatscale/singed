@@ -183,8 +183,8 @@ module Singed
       puts "$ #{Shellwords.join(sudo_args)}"
 
       # Sorbet can't check a splat of an array of unknown length: https://srb.help/7019
-      #: self as untyped
-      pid = spawn(env, *sudo_args)
+      process = Process #: as untyped
+      pid = process.spawn(env, *sudo_args) #: as Integer
       status = wait_passing_on_signals(pid)
       raise "#{Shellwords.join(sudo_args)} failed (#{status})" unless status.success?
 
@@ -211,8 +211,9 @@ module Singed
       waited = Process.wait2(pid) #: as !nil
       waited.last
     ensure
-      trap("INT", previous_int)
-      trap("TERM", previous_term)
+      # trap returns nil for a handler installed outside Ruby, and restoring nil would ignore the signal.
+      trap("INT", previous_int || "DEFAULT")
+      trap("TERM", previous_term || "DEFAULT")
     end
 
     #: () -> String?

@@ -22,6 +22,7 @@ module Singed
     def initialize(argv)
       @argv = argv
       @opts = OptionParser.new #: OptionParser
+      @interrupted = false #: bool
 
       parse_argv!
     end
@@ -194,17 +195,14 @@ module Singed
     # Kernel#system would leave the command running when singed is killed. Instead, the first SIGTERM is
     # passed on as SIGINT, which sudo relays and is the only signal rbspy stops cleanly on, killing the
     # command and writing the flamegraph. Nothing more is passed on, because rbspy exits without writing
-    # anything when interrupted twice, and Ctrl-C at a terminal already reaches it directly.
+    # anything when interrupted twice, and Ctrl-C at a terminal already reaches it directly. Later SIGTERMs
+    # are ignored until singed exits, so they can't stop it opening the flamegraph either.
     # https://github.com/rbspy/rbspy/blob/v0.53.0/src/main.rs#L164-L211
     #: (Integer) -> Process::Status
     def wait_passing_on_signals(pid)
-      interrupted = false #: bool
       previous_int = trap("INT", "IGNORE")
       previous_term = trap("TERM") do
-        Process.kill("INT", pid) unless interrupted
-        interrupted = true
-      rescue Errno::ESRCH
-        # It has already exited.
+        @interrupted ||= interrupt(pid)
       end
 
       # Process.wait2 only returns nil when told not to block.
@@ -213,7 +211,18 @@ module Singed
     ensure
       # trap returns nil for a handler installed outside Ruby, and restoring nil would ignore the signal.
       trap("INT", previous_int || "DEFAULT")
-      trap("TERM", previous_term || "DEFAULT")
+      trap("TERM", previous_term || "DEFAULT") unless @interrupted
+    end
+
+    # sudo before 1.9.13 doesn't relay a signal sent from its own process group, which singed shares to keep
+    # sudo in the terminal's foreground, so a kill in a group of its own sends it. kill fails while sudo
+    # briefly runs entirely as root, as it does starting up, and then a later SIGTERM tries again.
+    # https://github.com/sudo-project/sudo/commit/36742deec3041413af9b293706a64530321b96b5
+    #: (Integer) -> bool
+    def interrupt(pid)
+      kill = Process.spawn("kill", "-INT", pid.to_s, pgroup: true, err: File::NULL)
+      waited = Process.wait2(kill) #: as !nil
+      !!waited.last.success?
     end
 
     #: () -> String?

@@ -198,6 +198,8 @@ The flamegraph is opened afterwards.
 
 To profile a command that runs until it's stopped, like a server, stop it with Ctrl-C. Or, when `singed` runs in the background, such as from a script, stop it with `kill`'s default SIGTERM. Either way, rbspy stops the command and writes the flamegraph, which `singed` then opens. `singed` ignores a SIGINT sent to it alone, such as by `kill -INT`, because Ctrl-C's reaches rbspy directly.
 
+Send SIGTERM to `singed` alone, though, not to its whole process group as `kill -- -<pgid>` and `timeout` without `--foreground` do: sudo passes a SIGTERM straight on to rbspy, which then exits without writing the flamegraph. And rbspy kills only the command itself, so processes the command started may be left running.
+
 
 ## Limitations
 

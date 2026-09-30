@@ -8,6 +8,7 @@ require "singed/cli"
 RSpec.describe Singed::CLI do
   let(:dir) { Pathname(Dir.mktmpdir("singed-cli-spec")) }
   let(:bin) { dir.join("bin").tap(&:mkpath) }
+  let(:hold_open) { dir.join("hold_open") } # while it exists, opening the flamegraph doesn't finish
   let(:interrupts) { dir.join("interrupts.log") } # a line for each SIGINT rbspy gets
   let(:opened) { dir.join("opened.log") }
   let(:options) { [] } # singed's, before the command
@@ -47,11 +48,29 @@ RSpec.describe Singed::CLI do
   end
 
   def write_stand_ins
-    write_executable "sudo", <<~SH
-      #!/bin/sh
-      while [ "${1#-}" != "$1" ]; do shift; done
-      exec "$@"
-    SH
+    # Like sudo before 1.9.13, relays SIGINT and SIGTERM that another process sends, but not from a process
+    # in its own process group that's still running. It's Perl because Ruby can't tell who sent a signal.
+    # https://github.com/sudo-project/sudo/blob/SUDO_1_9_12p2/src/exec_nopty.c#L150-L170
+    write_executable "sudo", <<~'PERL'
+      #!/usr/bin/env perl
+      use strict;
+      use warnings;
+      use POSIX ();
+
+      shift @ARGV while @ARGV && $ARGV[0] =~ /^-/;
+      my $command;
+      for my $signal (POSIX::SIGINT, POSIX::SIGTERM) {
+        my $relay = sub {
+          my $sender = $_[1]{pid} or return;
+          kill $signal, $command if $command && getpgrp($sender) != getpgrp(0);
+        };
+        POSIX::sigaction($signal, POSIX::SigAction->new($relay, POSIX::SigSet->new, POSIX::SA_SIGINFO));
+      }
+      $command = fork // die "fork: $!";
+      exec { $ARGV[0] } @ARGV or die "exec: $!" unless $command;
+      1 until waitpid($command, 0) == $command;
+      exit($? & 127 ? 128 + ($? & 127) : $? >> 8);
+    PERL
     # Like rbspy, stops at the first SIGINT, then takes a moment to write the flamegraph, and exits
     # without writing anything at a second SIGINT.
     write_executable "rbspy", <<~RUBY
@@ -75,6 +94,7 @@ RSpec.describe Singed::CLI do
       write_executable opener, <<~SH
         #!/bin/sh
         echo "$0 $*" >> #{opened}
+        while [ -e #{hold_open} ]; do sleep 0.01; done
       SH
     end
   end
@@ -123,6 +143,17 @@ RSpec.describe Singed::CLI do
     expect(exit_status).to be_success, output.read
     expect(interrupts.read).to eq("INT\n")
     expect(dir.glob("speedscope-cli-*.json")).not_to be_empty
+  end
+
+  it "ignores later SIGTERMs until it has opened the flamegraph" do
+    command_pid
+    FileUtils.touch(hold_open)
+    Process.kill("TERM", singed)
+    eventually { opened.exist? }
+    Process.kill("TERM", singed)
+    hold_open.delete
+
+    expect(exit_status).to be_success, output.read
   end
 
   it "leaves Ctrl-C's SIGINT to reach rbspy from the terminal" do
